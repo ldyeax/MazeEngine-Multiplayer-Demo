@@ -1,0 +1,166 @@
+<!doctype html>
+<title>Interactive N64 Logo in WebGL</title>
+<meta charset=utf-8>
+
+<style>
+body {
+	background:black;
+	padding:0;
+	margin:0;
+	overflow:hidden;
+	font-family:georgia;
+	text-align:center;
+}
+h1 { }
+a { color:skyblue }
+canvas { pointer-events:none; z-index:10; }
+
+#d { text-align:center; margin:1em 0 -9.2em 0; z-index:0; position:relative; display:block }
+.button { background:#000; color:#fff; padding:0.2em 0.5em; cursor:pointer }
+.inactive { background:#999; color:#eee }
+</style>
+<body>
+
+<script src="../js/Three.js"></script>
+<script src="../js/Detector.js"></script>
+<script src="../js/RequestAnimationFrame.js"></script>
+<script src="../js/jquery.js"></script>
+
+<script>
+		
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
+var FLOOR = -250;
+
+var container,stats;
+
+var camera, scene;
+var canvasRenderer, webglRenderer;
+
+var mesh, zmesh, geometry;
+
+var mouseX = 0, mouseY = 0;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+
+var render_canvas = 1, render_gl = 1;
+var has_gl = 0;
+
+var bcanvas = document.getElementById( "rcanvas" );
+var bwebgl = document.getElementById( "rwebgl" );
+
+
+init();
+animate();
+
+render_canvas = !has_gl;
+
+function init() {
+
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+
+	camera = new THREE.PerspectiveCamera( 75, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 100000 );
+	camera.position.z = 500;
+	camera.rotation.x -= .5;
+	camera.position.y = 300;
+
+	scene = new THREE.Scene();
+
+	// LIGHTS
+
+	var ambient = new THREE.AmbientLight( 0xFFFFFF );
+	scene.add( ambient );
+	
+	var pointLight = new THREE.PointLight( 0xFFFFFF );
+	pointLight.position.x = 0;
+	pointLight.position.y = 300;
+	pointLight.position.z = 0;
+	scene.add(pointLight)
+
+	var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+	directionalLight.position.set( 0, -70, 100 ).normalize();
+	scene.add( directionalLight );
+
+	webglRenderer = new THREE.WebGLRenderer();
+	webglRenderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+	webglRenderer.domElement.style.position = "relative";
+
+	container.appendChild( webglRenderer.domElement );
+
+	var loader = new THREE.JSONLoader()
+
+	//loader.load( "n64_.js", function( geometry ) { createScene( geometry, 0,0,0, 105 ) } );
+	 new THREE.JSONLoader().load( "n64_.js", function( geometry ) { createScene( geometry, 0,0,0, 105 ) } );
+
+}
+
+function createScene( geometry, x, y, z, b ) {
+
+	$.zmesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+	$.zmesh.position.set( x, y, z );
+	$.zmesh.scale.set( 25,25,25 );
+	$.zmesh.overdraw = true;
+	scene.add( $.zmesh );
+}
+/*
+function createMaterialsPalette( materials, size, bottom )
+{
+	for ( var i = 0; i < materials.length; i ++ )
+	{
+		// material
+
+		mesh = new THREE.Mesh( new THREE.PlaneGeometry( size, size ), materials[i] );
+		mesh.position.x = i * (size + 5) - ( ( materials.length - 1 )* ( size + 5 )/2);
+		mesh.position.y = FLOOR + size/2 + bottom;
+		mesh.position.z = -100;
+		mesh.doubleSided = true;
+		scene.add( mesh );
+
+		// number
+
+		var x = document.createElement( "canvas" );
+		var xc = x.getContext( "2d" );
+		x.width = x.height = 128;
+		xc.shadowColor = "#000";
+		xc.shadowBlur = 7;
+		xc.fillStyle = "orange";
+		xc.font = "50pt arial bold";
+		xc.fillText( i, 10, 64 );
+
+		var xm = new THREE.MeshBasicMaterial( { map: new THREE.Texture( x ), transparent: true } );
+		xm.map.needsUpdate = true;
+
+		mesh = new THREE.Mesh( new THREE.PlaneGeometry( size, size ), xm );
+		mesh.position.x = i * ( size + 5 ) - ( ( materials.length - 1 )* ( size + 5 )/2);
+		mesh.position.y = FLOOR + size/2 + bottom;
+		mesh.position.z = -99;
+		mesh.doubleSided = true;
+		scene.add( mesh );
+	}
+}
+*/
+
+function animate()
+{
+	requestAnimationFrame( animate );
+	render();
+}
+$(document).mousemove(function(e)
+{
+	camera.position.x = ( e.pageX ) - (window.innerWidth/2);
+	camera.position.y = (600-(e.pageY))// - (window.innerHeight*2);
+}); 
+function render()
+{
+	//camera.lookAt( scene.position );
+	try
+	{
+		$.zmesh.rotation.y += .025;
+	}
+	catch(err){}
+
+	webglRenderer.render( scene, camera );
+}
+</script>

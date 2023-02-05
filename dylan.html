@@ -1,0 +1,97 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>Dulin Rubb</title>
+<body onload="init();animate();">
+<style>
+canvas
+{
+	position:absolute;
+	top:0px;
+	left:0px;
+	background-color: black;
+}
+</style>
+<script src=jquery.js></script>
+<script src=sth.js></script>
+<script src=gen95Maze.js></script>
+<script src=Three.js></script>
+<script src=RequestAnimationFrame.js></script>
+<script src=collisionCamera.js></script>
+
+<span id=q style="position:aboslute;top:0px;left:0px;"></span>
+
+<script>
+$(window).resize(function()
+{
+	renderer.setSize( window.innerWidth, window.innerHeight );
+});
+
+var camera, controls, scene, renderer, geometry, material, mesh, maze;
+var clock = new THREE.Clock();
+//320wl 200h
+
+
+function init()
+{
+
+	scene = new THREE.Scene();
+
+	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+	camera.position.z = 1000
+
+	controls = new THREE.FirstPersonControls( camera );
+
+	controls.movementSpeed = 750;
+	controls.lookSpeed = .4;
+	controls.lookVertical = 0;
+	
+	scene.add( camera );
+	
+	var ceilGeometry = new THREE.CubeGeometry( 800,800,800, 1, 1, 1, null);
+	var ceilTexture = THREE.ImageUtils.loadTexture("d.PNG");
+
+	var ceilMaterial = new THREE.MeshBasicMaterial({map: ceilTexture });
+	ceilMesh = new THREE.Mesh( ceilGeometry, ceilMaterial );
+	scene.add(ceilMesh);
+	
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+	document.body.appendChild( renderer.domElement );
+
+}
+
+function animate()
+{
+	requestAnimationFrame( animate );
+	render();
+	
+}
+
+function rad(n)
+{
+	return n*(Math.PI/180);
+}
+
+
+function render()
+{
+	//mesh.position.x += 2;
+	//controls.update( clock.getDelta() );
+	//camera.position.x++;
+	//camera.rotation.y = rad(180);
+	
+	//floorMesh.position.y += 1;
+
+	//camera.rotation.y += rad(1);
+
+	ceilMesh.rotation.x += .1;
+	ceilMesh.rotation.y += .1;
+	ceilMesh.rotation.z += .1;
+	
+	renderer.render( scene, camera );
+}
+
+</script>
+
+<embed width=0 height=0 src="http://www.youtube.com/v/WQSnjR0mvVE?autoplay=1" frameborder=0n></iframe>

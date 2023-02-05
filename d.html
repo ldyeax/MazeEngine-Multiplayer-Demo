@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>.</title>
+<body>
+
+<script>
+
+function forInRange(start,end,variable,code)
+{
+	eval(variable+"="+start+";for("+variable+"=start;"+variable+"<end;"+variable+"++){code()}");
+}
+
+forInRange(0,10,"yes",function()
+{
+	alert(yes)
+});
+
+</script>

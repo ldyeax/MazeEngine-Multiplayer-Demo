@@ -1,0 +1,1 @@
+javascript:alert(bounding_box_collision(0,0,10,20,5,5,15,25))
