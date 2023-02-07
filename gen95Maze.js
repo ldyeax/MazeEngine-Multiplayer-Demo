@@ -92,6 +92,7 @@ function windows95Maze(width,height)
 
 	function deadend(yb,xb)
 	{
+		// is any surrounding cell secluded
 		if (yb > 0)
 		{
 			if ($.rows[yb-1][xb].secluded())
@@ -213,33 +214,4 @@ function windows95Maze(width,height)
 			trail[place] = [y,x];
 		}
 	}
-	//random lego globe thing wall
-	/*
-	rax = randint(0,width-1);
-	ray = randint(0,height-1);
-	
-	switch( $.rows[ray][rax] )
-	{
-		case this.up:
-			this.up = 2;
-			break;
-		case this.left:
-			this.left=2;
-			break;
-		case this.right:
-			this.right=2;
-			break;
-		case this.down:
-			this.down=2;
-			break;
-	}
-	*/
 }
-/*
-     FILE ARCHIVED ON 16:41:23 Oct 24, 2013 AND RETRIEVED FROM THE
-     INTERNET ARCHIVE ON 00:56:38 Nov 08, 2017.
-     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
-
-     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
-     SECTION 108(a)(3)).
-*/
