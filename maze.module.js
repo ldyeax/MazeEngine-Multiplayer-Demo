@@ -239,6 +239,12 @@ class ImageAsset extends Asset {
 			texture.repeat.x = repeatX;
 			texture.repeat.y = repeatY;
 
+			//tex.magFilter = THREE.NearestFilter;
+			//tex.minFilter = THREE.NearestFilter; 
+			texture.magFilter = THREE.NearestFilter;
+			texture.minFilter = THREE.NearestFilter;
+			texture.anisotropy = 0;
+
 			let material = new THREE.MeshBasicMaterial({ map: texture });
 			this.mesh = new THREE.Mesh(geometry, material);
 			this.mesh.rotation.x = this.mesh.rotation.y = this.mesh.rotation.z = 0;
@@ -308,31 +314,38 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	// assets.push(wallAsset);
 	// assets.push(ceilingAsset);
 
-	var floorAsset = new ImageAsset(
+	let floorAsset = new ImageAsset(
 		floorUrl, 
 		SIDE * width, 0, SIDE * height,
 		width, height
 	);
 	assets.push(floorAsset);
 
-	var ceilingAsset = new ImageAsset(
+	let ceilingAsset = new ImageAsset(
 		ceilingUrl,
 		SIDE * width, 0, SIDE * height,
 		width, height
 	);
 	assets.push(ceilingAsset);
 
+	let wallAsset = new ImageAsset(
+		wallUrl,
+		SIDE, SIDE, 0,
+		1, 1
+	);
+	assets.push(wallAsset);
+
 	// console.log("Loading assets");
 	await loadAllAssets();
 	// console.log("Loaded assets");
 
 	floorAsset.mesh.position.y = 0;
-	floorAsset.mesh.position.z = SIDE * height * -0.5;
+	floorAsset.mesh.position.z = -SIDE * height * 0.5;
 	floorAsset.mesh.position.x = SIDE * width * 0.5;
 	window.fm = floorAsset.mesh;
 
 	ceilingAsset.mesh.position.y = SIDE;
-	ceilingAsset.mesh.position.z = SIDE * height * -0.5;
+	ceilingAsset.mesh.position.z = -SIDE * height * 0.5;
 	ceilingAsset.mesh.position.x = SIDE * width * 0.5;
 	window.cm = ceilingAsset.mesh;
 
@@ -343,12 +356,18 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	const ambient = new THREE.AmbientLight(0x00FF00);
 	scene.add(ambient);
 
-	const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 10000);
+	let canvasWidth = 640;
+	let canvasHeight = parseInt(canvasWidth * window.innerHeight / window.innerWidth);
+
+	canvas.width = canvasWidth;
+	canvas.height = canvasHeight;
+
+	const camera = new THREE.PerspectiveCamera(75, canvasWidth / canvasHeight, 0.1, 10000);
 	window.camera = camera;
 	
 	camera.position.x = 0.5 * SIDE;
-	camera.position.y = SIDE * 0.5;// 5;
-	camera.position.z = 0.5 * SIDE;
+	camera.position.y = 0.5 * SIDE;// 5;
+	camera.position.z = -0.5 * SIDE;
 
 	camera.rotation.x = 0;
 	camera.rotation.y = 0;
@@ -363,25 +382,66 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	scene.add(floorAsset.mesh);
 	scene.add(ceilingAsset.mesh);
 
+	function addWall(d, x, y) {
+		let wallMesh = wallAsset.mesh.clone();
+		
+		wallMesh.position.y = SIDE * 0.5;
+
+		// left
+		if (d == 0) {
+			wallMesh.position.x = x * SIDE;
+			wallMesh.position.z = -y * SIDE + SIDE * -0.5;
+			wallMesh.rotation.y = Math.PI * 0.5;
+		}
+		//right
+		else if (d == 1) {
+			wallMesh.position.x = x * SIDE + SIDE;
+			wallMesh.position.z = -y * SIDE + SIDE * -0.5;
+			wallMesh.rotation.y = Math.PI * 0.5;
+		}
+		// up
+		else if (d == 2) {
+			wallMesh.position.x = x * SIDE + SIDE * 0.5;
+			wallMesh.position.z = -y * SIDE + SIDE * -1;
+			wallMesh.rotation.y = 0;
+		}
+		// down
+		else if (d == 3) {
+			wallMesh.position.x = x * SIDE + SIDE * 0.5;
+			wallMesh.position.z = -y * SIDE;
+			wallMesh.rotation.y = 0;
+		}
+
+		scene.add(wallMesh);
+		return wallMesh;
+	}
+
+	addWall(0, 0, 0);
+	addWall(2, 0, 0);
+	addWall(1, 0, 0);
+
+	addWall(0, 0, 1);
+	addWall(2, 0, 1);
+
 	// ceilingAsset.mesh.position.y = 200;
 	// ceilingAsset.mesh.scale.y = -1;
 	// scene.add(ceilingAsset.mesh);
 
 	const renderer = new THREE.WebGLRenderer({ 
-		antialias: true, 
+		antialias: false, 
 		canvas: canvas,
 		alpha: true
 	});
-	renderer.setSize(canvas.width, canvas.height);
+
+	//renderer.setSize(640, window.innerWidth * 640 / window.innerHeight, false);
+
+	renderer.setSize(canvasWidth/2, canvasHeight/2, false);
 	renderer.setClearColor(0,0);
 
 	//gameObjects.push(new N64());
 
 	Time.time = Date.now() * inv1000;
 	let lastUpdateTime = Time.time;
-
-	// // make camera look at n64
-	// camera.lookAt(gameObjects[0].mesh.position);
 
 	function update() {
 		globalYScale += Time.deltaTime;
