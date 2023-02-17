@@ -1,16 +1,152 @@
 export const name = "maze";
 
+// #region keymap
+
+const KEYSTATE_DOWN = 1;
+const KEYSTATE_HELD = 2;
+const KEYSTATE_UP = 3;
+const KEYSTATE_NONE = 0;
+
+const KEY_ACTIONS = {
+	FORWARD: 1,
+	BACKWARD: 2,
+	LEFT: 3,
+	RIGHT: 4,
+}
+
+const keyMap = {};
+keyMap[KEY_ACTIONS.FORWARD] = "KeyW";
+keyMap[KEY_ACTIONS.BACKWARD] = "KeyS";
+keyMap[KEY_ACTIONS.LEFT] = "KeyA";
+keyMap[KEY_ACTIONS.RIGHT] = "KeyD";
+
+const keyStates = {};
+keyStates[KEY_ACTIONS.FORWARD] = KEYSTATE_NONE;
+keyStates[KEY_ACTIONS.BACKWARD] = KEYSTATE_NONE;
+keyStates[KEY_ACTIONS.LEFT] = KEYSTATE_NONE;
+keyStates[KEY_ACTIONS.RIGHT] = KEYSTATE_NONE;
+
+window.addEventListener("keydown", function(e) {
+	let code = e.code;
+	// console.log(`Keydown: ${code}`);
+	for (let actionName in KEY_ACTIONS) {
+		let actionId = KEY_ACTIONS[actionName];
+		if (keyMap[actionId] === code) {
+			let existingState = keyStates[actionId];
+			if (existingState !== KEYSTATE_HELD) {
+				keyStates[actionId] = KEYSTATE_DOWN;
+				// console.log(`Keydown: ${actionName}`);
+				// console.log(keyStates);
+			}
+		}
+	}
+});
+window.addEventListener("keyup", function(e) {
+	let code = e.code;
+	for (let actionName in KEY_ACTIONS) {
+		let actionId = KEY_ACTIONS[actionName];
+		if (keyMap[actionId] === code) {
+			keyStates[actionId] = KEYSTATE_UP;
+		}
+	}
+});
+
+// #endregion
+
+// #region Utiliy constants
+const gltfLoader = new GLTFLoader();
+const textureLoader = new THREE.TextureLoader();
+// #endregion
+// #region engine constants
+const SIDE = 320;
+const INV_SIDE = 1.0 / SIDE;
+let camera = null;
+const inv1000 = 1.0 / 1000.0;
+const wallMeshes = [];
+const gameObjects = [];
+const assets = [];
+const WALL_COLLISION_DIST = 0.1;
+const ONE_MINUS_WALL_COLLISION_DIST = 1.0 - WALL_COLLISION_DIST;
+
+function loadAllAssets() {
+	return new Promise((resolve) => {
+		let interval = setInterval(() => {
+			let allLoaded = true;
+			for (let asset of assets) {
+				if (!asset.loaded) {
+					allLoaded = false;
+					break;
+				}
+			}
+			if (allLoaded) {
+				clearInterval(interval);
+				// console.log("Resolving");
+				resolve();
+			}
+		}, 100);
+	});
+}
+
+
+// #endregion
+
+// #region utility functions
+function gridToWorld(vector2) {
+	return new THREE.Vector3(vector2.x * SIDE, 0, vector2.y * SIDE);
+}
+// #endregion
+
+// #region cardinals
+const NORTH = 0;
+const EAST = 1;
+const SOUTH = 2;
+const WEST = 3;
+function clampCardinal(cardinal) {
+	let ret = cardinal % 4;
+	if (ret < 0) {
+		ret += 4;
+	}
+	return ret;
+}
+
+const CARDINAL_ROTATION_SIGN = {};
+CARDINAL_ROTATION_SIGN[NORTH] = {};
+CARDINAL_ROTATION_SIGN[NORTH][NORTH] = 0;
+CARDINAL_ROTATION_SIGN[NORTH][EAST] = -1;
+CARDINAL_ROTATION_SIGN[NORTH][SOUTH] = 1;
+CARDINAL_ROTATION_SIGN[NORTH][WEST] = 1;
+
+CARDINAL_ROTATION_SIGN[EAST] = {};
+CARDINAL_ROTATION_SIGN[EAST][NORTH] = -1;
+CARDINAL_ROTATION_SIGN[EAST][EAST] = 0;
+CARDINAL_ROTATION_SIGN[EAST][SOUTH] = 1;
+CARDINAL_ROTATION_SIGN[EAST][WEST] = -1;
+
+CARDINAL_ROTATION_SIGN[SOUTH] = {};
+CARDINAL_ROTATION_SIGN[SOUTH][NORTH] = 1;
+CARDINAL_ROTATION_SIGN[SOUTH][EAST] = 1;
+CARDINAL_ROTATION_SIGN[SOUTH][SOUTH] = 0;
+CARDINAL_ROTATION_SIGN[SOUTH][WEST] = -1;
+
+CARDINAL_ROTATION_SIGN[WEST] = {};
+CARDINAL_ROTATION_SIGN[WEST][NORTH] = -1;
+CARDINAL_ROTATION_SIGN[WEST][EAST] = 1;
+CARDINAL_ROTATION_SIGN[WEST][SOUTH] = 1;
+CARDINAL_ROTATION_SIGN[WEST][WEST] = 0;
+// #endregion
+
 import * as THREE from './three/Three.js'
 import {GLTFLoader} from "./three_examples/jsm/loaders/GLTFLoader.js"
 // import CubeGeometry
 
+// #region Maze generation
 
 export class Cell {
-	constructor() {
-		this.up = true;
-		this.left = true;
-		this.right = true;
-		this.down = true;
+	constructor(up = true, left = true, right = true, down = true) {
+		this.up = up;
+		this.left = left;
+		this.right = right;
+		this.down = down;
 	}
 	secluded() {
 		return (this.up && this.left && this.right && this.down);
@@ -18,6 +154,18 @@ export class Cell {
 };
 
 export function generateMaze(width, height) {
+	width = parseInt(Math.abs(width));
+	height = parseInt(Math.abs(height));
+	if (isNaN(width) || isNaN(height) || width < 1 || height < 1) {
+		console.error(`Invalid dimensions passed to generateMaze: ${width}, ${height}`);
+		width = 1;
+		height = 1;
+	}
+
+	if (width * height == 1) {
+		return [[new Cell()]];
+	}
+
 	let ret = [];
 	for (let y = 0; y < height; y++) {
 		ret.push([]);
@@ -48,12 +196,12 @@ export function generateMaze(width, height) {
 			return false;
 		}
 		// New cell is below
-		if (y1 < y2) {
+		if (y2 < y1) {
 			cell2.up = false;
 			cell1.down = false;
 		}
 		// New cell is above
-		else if (y1 > y2) {
+		else if (y2 > y1) {
 			cell2.down = false;
 			cell1.up = false;
 		}
@@ -146,9 +294,9 @@ export function generateMaze(width, height) {
 	return ret;
 };
 
-function ascii(cells) {
+function mazeAsciiArt(cells) {
 	let ret = "";
-	for (let y = 0; y < cells.length; y++) {
+	for (let y = cells.length - 1; y >= 0; y--) {
 		for (let x = 0; x < cells[y].length; x++) {
 			let cell = cells[y][x];
 			if (cell.up) {
@@ -185,23 +333,9 @@ function ascii(cells) {
 	return ret;
 }
 
-class GameObject {
-	static count = 0;
-	constructor() {
-		this.id = GameObject.count++;
-		this.name = "";
-		this.position = new THREE.Vector2();
-		this.mesh = null;
-	}
-	updateMesh() {
-		this.mesh.position.x = this.position.x;
-		this.mesh.position.z = this.position.y;
-		this.mesh.position.y = 100;
-	}
-	update() { }
-}
+// #endregion
 
-const gltfLoader = new GLTFLoader();
+// #region assets
 
 class Asset {
 	constructor() {
@@ -221,8 +355,6 @@ class N64Asset extends Asset {
 	}
 }
 
-const textureLoader = new THREE.TextureLoader();
-
 class ImageAsset extends Asset {
 	constructor (url, width, height, depth, repeatX, repeatY) {
 		super();
@@ -235,12 +367,10 @@ class ImageAsset extends Asset {
 
 			texture.offset.x = 0;
 			texture.offset.y = 0;
-			console.log("repeat x y : " + repeatX + ", " + repeatY + "")
+			// console.log("repeat x y : " + repeatX + ", " + repeatY + "")
 			texture.repeat.x = repeatX;
 			texture.repeat.y = repeatY;
 
-			//tex.magFilter = THREE.NearestFilter;
-			//tex.minFilter = THREE.NearestFilter; 
 			texture.magFilter = THREE.NearestFilter;
 			texture.minFilter = THREE.NearestFilter;
 			texture.anisotropy = 0;
@@ -253,6 +383,30 @@ class ImageAsset extends Asset {
 	}
 }
 
+// #endregion
+
+// #region GameObject
+
+class GameObject {
+	static count = 0;
+	constructor() {
+		this.id = GameObject.count++;
+		this.name = "";
+		this.position = new THREE.Vector3();
+		this.lastPosition = new THREE.Vector3();
+		this.rotation = new THREE.Vector3();
+		this.mesh = null;
+	}
+	updateMesh() {
+		if (this.mesh) {
+			this.mesh.position.set(this.position.x, this.position.y, this.position.z);
+			this.mesh.rotation.set(this.rotation.x, this.rotation.y, this.rotation.z);
+		}
+	}
+	update() { 
+		this.lastPosition = this.position.clone();
+	}
+}
 
 class N64 extends GameObject {
 	constructor() {
@@ -266,36 +420,197 @@ class N64 extends GameObject {
 	}
 }
 
-const assets = [];
-function loadAllAssets() {
-	return new Promise((resolve) => {
-		let interval = setInterval(() => {
-			let allLoaded = true;
-			for (let asset of assets) {
-				if (!asset.loaded) {
-					allLoaded = false;
-					break;
-				}
-			}
-			if (allLoaded) {
-				clearInterval(interval);
-				// console.log("Resolving");
-				resolve();
-			}
-		}, 100);
-	});
+class Input {
+	static isDown(action) {
+		return keyStates[action] == KEYSTATE_DOWN || keyStates[action] == KEYSTATE_HELD;
+	}
 }
 
-const gameObjects = [];
+class Player extends GameObject {
+	static STATE = {
+		WAITING_FOR_GAME_START: -1,
+		IDLE: 0,
+		TURNING_LEFT: 1,
+		TURNING_RIGHT: 2,
+		MOVING_FORWARD: 3,
+		MOVING_BACKWARD: 4,
+		FLIPPING: 5,
+	};
+
+	static MOVE_SPEED = SIDE; // units per second
+	// 90 degrees per second, in radians
+	static ROTATE_SPEED = Math.PI / 2;
+
+	constructor() {
+		super();
+		this.name = "Player";
+		this.mesh = N64Asset.mesh.clone();
+		this.mesh.scale.x = this.mesh.scale.y = this.mesh.scale.z = 0.5;
+		
+		this.state = Player.STATE.WAITING_FOR_GAME_START;
+
+		this.currentFacing = NORTH;
+		this.targetFacing = NORTH;
+
+		this.currentPosition = new THREE.Vector2(0, 0);
+		this.targetPosition = new THREE.Vector2(0, 0);
+
+		this.position.x = SIDE * 0.5;
+		this.position.z = SIDE * -0.5;
+	}
+
+	moveAndRotateToTarget() {
+		if (this.currentFacing != this.targetFacing) {
+			let sign = CARDINAL_ROTATION_SIGN[this.currentFacing][this.targetFacing];
+			this.rotation.y += sign * Player.ROTATE_SPEED * Time.deltaTime;;
+		}
+	}
+
+	// processTurnInput() {
+	// 	if (keyStates[KEY_ACTIONS.LEFT] == KEYSTATE_HELD) {
+	// 		this.targetFacing = clampCardinal(this.currentFacing - 1);
+	// 	} else if (keyStates[KEY_ACTIONS.RIGHT] == KEYSTATE_HELD) {
+	// 		this.targetFacing = clampCardinal(this.currentFacing + 1);
+	// 	}
+	// }
+
+	update() {
+		super.update();
+
+		if (Input.isDown(KEY_ACTIONS.LEFT)) {
+			this.rotation.y += Player.ROTATE_SPEED * Time.deltaTime;
+		}
+		if (Input.isDown(KEY_ACTIONS.RIGHT)) {
+			this.rotation.y -= Player.ROTATE_SPEED * Time.deltaTime;
+		}
+		if (Input.isDown(KEY_ACTIONS.FORWARD)) {
+			let dx = -Math.sin(this.rotation.y) * Player.MOVE_SPEED * Time.deltaTime;
+			let dz = -Math.cos(this.rotation.y) * Player.MOVE_SPEED * Time.deltaTime;
+			this.position.x += dx;
+			this.position.z += dz;
+		}
+		if (Input.isDown(KEY_ACTIONS.BACKWARD)) {
+			let dx = Math.sin(this.rotation.y) * Player.MOVE_SPEED * Time.deltaTime;
+			let dz = Math.cos(this.rotation.y) * Player.MOVE_SPEED * Time.deltaTime;
+			this.position.x += dx;
+			this.position.z += dz;
+		}
+
+		camera.position.set(this.position.x, SIDE * 0.5, this.position.z);
+		camera.rotation.set(0, this.rotation.y, 0);
+
+		// switch (this.state) {
+		// 	case Player.STATE.WAITING_FOR_GAME_START:
+		// 		break;
+		// 	case Player.STATE.IDLE:
+
+		// 		break;
+
+		// }
+	}
+}
+
+class InputManager extends GameObject {
+	constructor() {
+		super();
+		this.lastKeyStates = Object.assign({}, keyStates);
+	}
+	// sets key states based on current (set by addEventListeners above) and last states
+	update() {
+		super.update();
+		for (let actionName in KEY_ACTIONS) {
+			let actionId = KEY_ACTIONS[actionName];
+			let currentKeyState = keyStates[actionId];
+			let lastKeyState = this.lastKeyStates[actionId];
+			let toSet = null;
+			switch (lastKeyState) {
+				case KEYSTATE_UP:
+					switch (currentKeyState) {
+						case KEYSTATE_UP:
+							toSet = KEYSTATE_NONE;
+							break;
+						case KEYSTATE_DOWN:
+							toSet = KEYSTATE_DOWN;
+							break;
+						case KEYSTATE_HELD:
+							console.error("Illegal state transition: up then held");
+							toSet = KEYSTATE_DOWN;
+							break;
+						case KEYSTATE_NONE:
+							toSet = KEYSTATE_NONE;
+							break;
+					}
+					break;
+				case KEYSTATE_DOWN:
+					switch (currentKeyState) {
+						case KEYSTATE_UP:
+							toSet = KEYSTATE_UP;
+							break;
+						case KEYSTATE_DOWN:
+							toSet = KEYSTATE_HELD;
+							break;
+						case KEYSTATE_HELD:
+							toSet = KEYSTATE_HELD;
+							break;
+						case KEYSTATE_NONE:
+							console.error("Illegal state transition: down then none");
+							toSet = KEYSTATE_UP;
+							break;
+					}
+					break;
+				case KEYSTATE_HELD:
+					switch (currentKeyState) {
+						case KEYSTATE_UP:
+							toSet = KEYSTATE_UP;
+							break;
+						case KEYSTATE_DOWN:
+							console.error("Illegal state transition: held then down");
+							toSet = KEYSTATE_UP;
+							break;
+						case KEYSTATE_HELD:
+							toSet = KEYSTATE_HELD;
+							break;
+						case KEYSTATE_NONE:
+							console.error("Illegal state transition: held then none");
+							toSet = KEYSTATE_UP;
+							break;
+					}
+					break;
+				case KEYSTATE_NONE:
+					switch (currentKeyState) {
+						case KEYSTATE_UP:
+							console.error("Illegal state transition: none then up");
+							toSet = KEYSTATE_NONE;
+							break;
+						case KEYSTATE_DOWN:
+							toSet = KEYSTATE_DOWN;
+							break;
+						case KEYSTATE_HELD:
+							console.error("Illegal state transition: none then held");
+							toSet = KEYSTATE_DOWN;
+							break;
+						case KEYSTATE_NONE:
+							toSet = KEYSTATE_NONE;
+							break;
+					}
+					break;
+			}
+			keyStates[actionId] = toSet;
+		}
+		this.lastKeyStates = Object.assign({}, keyStates);
+	}
+}
+
+// #endregion
+
+// #region Time
 
 class Time {
 	static time = 0;
 	static deltaTime = 0;
 }
 
-const inv1000 = 1.0 / 1000.0;
-
-const SIDE = 320;
+// #endregion
 
 async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	//console.log("width: " + width + ", height: " + height);
@@ -306,9 +621,10 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	let invWidth = 1.0 / width;
 	let invHeight = 1.0 / height;
 
-	//const cells = generateMaze(width, height);
+	const cells = generateMaze(width, height);
+	console.log(mazeAsciiArt(cells));
 
-	// Assets
+	// #region Assets
 	assets.push(new N64Asset());
 	// var wallAsset = new ImageAsset(wallUrl, SIDE, SIDE);
 	// assets.push(wallAsset);
@@ -349,6 +665,13 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	ceilingAsset.mesh.position.x = SIDE * width * 0.5;
 	window.cm = ceilingAsset.mesh;
 
+	// #endregion
+
+	// #region Game Objects
+	gameObjects.push(new InputManager());
+	let player = new Player();
+	gameObjects.push(player);
+	// #endregion
 
 	// create threejs scene
 	const scene = new THREE.Scene();
@@ -362,7 +685,7 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	canvas.width = canvasWidth;
 	canvas.height = canvasHeight;
 
-	const camera = new THREE.PerspectiveCamera(75, canvasWidth / canvasHeight, 0.1, 10000);
+	camera = new THREE.PerspectiveCamera(75, canvasWidth / canvasHeight, 0.1, 10000);
 	window.camera = camera;
 	
 	camera.position.x = 0.5 * SIDE;
@@ -382,10 +705,18 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	scene.add(floorAsset.mesh);
 	scene.add(ceilingAsset.mesh);
 
+	// #region Walls
+	const ADDWALL_LEFT = 0;
+	const ADDWALL_RIGHT = 1;
+	const ADDWALL_UP = 2;
+	const ADDWALL_DOWN = 3;
+
 	function addWall(d, x, y) {
 		let wallMesh = wallAsset.mesh.clone();
+		wallMeshes.push(wallMesh);
 		
-		wallMesh.position.y = SIDE * 0.5;
+		wallMesh.position.y = 0;
+		wallMesh.scale.y = 0;
 
 		// left
 		if (d == 0) {
@@ -401,31 +732,46 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 		}
 		// up
 		else if (d == 2) {
+			// console.log(`making up at ${x}, ${y}`);
+
 			wallMesh.position.x = x * SIDE + SIDE * 0.5;
-			wallMesh.position.z = -y * SIDE + SIDE * -1;
+			wallMesh.position.z = -y * SIDE - SIDE;
 			wallMesh.rotation.y = 0;
+
+			//wallMesh.scale.x = wallMesh.scale.y = wallMesh.scale.z = 0;
 		}
 		// down
 		else if (d == 3) {
+			// console.log(`making down at ${x}, ${y}`);
+
 			wallMesh.position.x = x * SIDE + SIDE * 0.5;
 			wallMesh.position.z = -y * SIDE;
 			wallMesh.rotation.y = 0;
 		}
 
 		scene.add(wallMesh);
+		
 		return wallMesh;
 	}
-
-	addWall(0, 0, 0);
-	addWall(2, 0, 0);
-	addWall(1, 0, 0);
-
-	addWall(0, 0, 1);
-	addWall(2, 0, 1);
-
-	// ceilingAsset.mesh.position.y = 200;
-	// ceilingAsset.mesh.scale.y = -1;
-	// scene.add(ceilingAsset.mesh);
+	for (let y = 0; y < cells.length; y++) {
+		let row = cells[y];
+		for (let x = 0; x < row.length; x++) {
+			let cell = row[x];
+			if (cell.up) {
+				addWall(ADDWALL_UP, x, y);
+			}
+			if (cell.down) {
+				addWall(ADDWALL_DOWN, x, y);
+			}
+			if (cell.left) {
+				addWall(ADDWALL_LEFT, x, y);
+			}
+			if (cell.right) {
+				addWall(ADDWALL_RIGHT, x, y);
+			}
+		}
+	}
+	// #endregion
 
 	const renderer = new THREE.WebGLRenderer({ 
 		antialias: false, 
@@ -435,7 +781,7 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 
 	//renderer.setSize(640, window.innerWidth * 640 / window.innerHeight, false);
 
-	renderer.setSize(canvasWidth/2, canvasHeight/2, false);
+	renderer.setSize(canvasWidth, canvasHeight, false);
 	renderer.setClearColor(0,0);
 
 	//gameObjects.push(new N64());
@@ -453,11 +799,46 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 		Time.time = Date.now() * inv1000;
 		Time.deltaTime = Time.time - lastUpdateTime;
 		lastUpdateTime = Time.time;
+
+		let zDiv = -player.position.z * INV_SIDE;
+		let cell_y = Math.floor(zDiv);
+		let yPortion = zDiv - cell_y;
+		let xDiv = player.position.x * INV_SIDE;
+		let cell_x = Math.floor(player.position.x / SIDE);
+		let xPortion = xDiv - cell_x;
+
+		let cell = cells[cell_y][cell_x];
+
+		let collision = false;
+		if (cell.left && xPortion < WALL_COLLISION_DIST) {
+			collision = true;
+		} else if (cell.right && xPortion > ONE_MINUS_WALL_COLLISION_DIST) {
+			collision = true;
+		} else if (cell.up && yPortion > ONE_MINUS_WALL_COLLISION_DIST) {
+			collision = true;
+		} else if (cell.down && yPortion < WALL_COLLISION_DIST) {
+			collision = true;
+		}
+
+		if (collision) {
+			player.position.x = player.lastPosition.x;
+			player.position.z = player.lastPosition.z;
+		}
+
 		for (let gameObject of gameObjects) {
 			gameObject.update();
 			gameObject.updateMesh();
-			gameObject.mesh.scale.y = globalYScale;
+			if (gameObject.mesh && gameObject.mesh.scale.y != globalYScale) {
+				gameObject.mesh.scale.y = globalYScale;
+			}
 		}
+		for (let wallMesh of wallMeshes) {
+			if (wallMesh.scale.y != globalYScale) {
+				wallMesh.scale.y = globalYScale;
+				wallMesh.position.y = SIDE * 0.5 * globalYScale;
+			}
+		}
+
 		renderer.render(scene, camera);
 	}
 	update();
