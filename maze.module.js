@@ -457,6 +457,7 @@ class Player extends GameObject {
 
 		this.position.x = SIDE * 0.5;
 		this.position.z = SIDE * -0.5;
+		this.lastPosition = this.position.clone();
 	}
 
 	moveAndRotateToTarget() {
@@ -779,7 +780,8 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 		alpha: true
 	});
 
-	//renderer.setSize(640, window.innerWidth * 640 / window.innerHeight, false);
+	console.log(`${window.innerWidth} x ${window.innerHeight}`);
+	//(640, 480, false);
 
 	renderer.setSize(canvasWidth, canvasHeight, false);
 	renderer.setClearColor(0,0);
@@ -789,25 +791,18 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	Time.time = Date.now() * inv1000;
 	let lastUpdateTime = Time.time;
 
-	function update() {
-		globalYScale += Time.deltaTime;
-		if (globalYScale > 1) {
-			globalYScale = 1;
-		}
-
-		requestAnimationFrame(update);
-		Time.time = Date.now() * inv1000;
-		Time.deltaTime = Time.time - lastUpdateTime;
-		lastUpdateTime = Time.time;
-
-		let zDiv = -player.position.z * INV_SIDE;
+	function isCollidingWithWalls(position) {
+		let zDiv = -position.z * INV_SIDE;
 		let cell_y = Math.floor(zDiv);
 		let yPortion = zDiv - cell_y;
-		let xDiv = player.position.x * INV_SIDE;
-		let cell_x = Math.floor(player.position.x / SIDE);
+		let xDiv = position.x * INV_SIDE;
+		let cell_x = Math.floor(position.x / SIDE);
 		let xPortion = xDiv - cell_x;
 
 		let cell = cells[cell_y][cell_x];
+		if (typeof cell == 'undefined') {
+			return false;
+		}
 
 		let collision = false;
 		if (cell.left && xPortion < WALL_COLLISION_DIST) {
@@ -820,10 +815,35 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 			collision = true;
 		}
 
-		if (collision) {
-			player.position.x = player.lastPosition.x;
-			player.position.z = player.lastPosition.z;
+		return collision;
+	}
+
+	function update() {
+		globalYScale += Time.deltaTime;
+		if (globalYScale > 1) {
+			globalYScale = 1;
 		}
+
+		requestAnimationFrame(update);
+		Time.time = Date.now() * inv1000;
+		Time.deltaTime = Time.time - lastUpdateTime;
+		lastUpdateTime = Time.time;
+
+		let oldPosition = player.lastPosition;
+		let newPosition = oldPosition.clone();
+
+		newPosition.x = player.position.x;
+		if (isCollidingWithWalls(newPosition)) {
+			newPosition.x = oldPosition.x;
+		}
+
+		newPosition.z = player.position.z;
+		if (isCollidingWithWalls(newPosition)) {
+			newPosition.z = oldPosition.z;
+		}
+
+		player.position.x = newPosition.x;
+		player.position.z = newPosition.z;
 
 		for (let gameObject of gameObjects) {
 			gameObject.update();
