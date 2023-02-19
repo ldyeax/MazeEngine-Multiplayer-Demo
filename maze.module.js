@@ -869,13 +869,13 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	Time.time = Date.now() * inv1000;
 	let lastUpdateTime = Time.time;
 
-	let nocip = window.location.search.indexOf("noclip") != -1;
+	let noclip = window.location.search.indexOf("noclip") != -1;
 
 	function isCollidingWithWalls(position) {
 		if (noclip) {
 			return false;
 		}
-		
+
 		let zDiv = -position.z * INV_SIDE;
 		let cell_y = Math.floor(zDiv);
 		let yPortion = zDiv - cell_y;
