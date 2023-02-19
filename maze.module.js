@@ -340,17 +340,85 @@ function mazeAsciiArt(cells) {
 class Asset {
 	constructor() {
 		this.loaded = false;
-		this.mesh = null;
+		this.root = null;
 	}
 }
 
-class N64Asset extends Asset {
-	static mesh;
-	constructor() {
+// Strings will be replaced with mesh objects
+const staticMeshAssets = {
+	N64: "n64/scene.gltf",
+	marbletest: "assets/marbletest.gltf",
+};
+
+window.staticMeshAssets = staticMeshAssets;
+
+function prependLog(str, n) {
+	let s = "";
+	for (let i = 0; i < n; i++) {
+		s += "\t";
+	}
+	s += str;
+	console.log(s);
+}
+
+class GLTFAsset extends Asset {
+	static defaultProperties = {
+		side: 2,
+		transparent: false
+	}
+
+	setProperties(gltfObject, properties = {}, depth = 0) {
+		// let l = function(s){ prependLog(s, depth); }
+		let l = function(_) {};
+		l(`setProperties(${gltfObject.name}, ${JSON.stringify(properties)}))`);
+		properties = Object.assign({}, GLTFAsset.defaultProperties, properties);
+		if (gltfObject.userData && gltfObject.userData.three_props) {
+			l("Found three_props");
+			try {
+				Object.assign(properties, JSON.parse(gltfObject.userData.three_props));
+				l("Got new properties, set: " + JSON.stringify(properties));
+			} catch (e) {
+				console.error("Error parsing three_props on " + gltfObject.name);
+				console.error(e);
+				console.error(gltfObject.userData.three_props);
+			}
+		}
+		if (gltfObject.material) {
+			l("Found material");
+			this.setProperties(gltfObject.material, properties, depth + 1);
+		} else {
+			l("No material");
+		}
+		for (let key of Object.keys(properties)) {
+			l(`Checking if ${key} is defined on ${gltfObject.name}`)
+			if (typeof gltfObject[key] !== "undefined") {
+				l(`Setting ${key} to ${properties[key]} on ${gltfObject.name}`)
+				gltfObject[key] = properties[key];
+			} else {
+				l("Not defined");
+			}
+		}
+		if (gltfObject.children) {
+			l("found children");
+			for (let child of gltfObject.children) {
+				this.setProperties(child, properties, depth + 1);
+			}
+		} else {
+			l("No children");
+		}
+	}
+
+	constructor(key) {
 		super();
-		gltfLoader.load("n64/scene.gltf", (gltf) => {
-			N64Asset.mesh = gltf.scene;
+		this.key = key;
+		this.url = staticMeshAssets[key];
+		gltfLoader.load(this.url, (gltf) => {
+			console.log("loaded " + this.url);
+			this.root = gltf.scene;
+			window["mesh_" + key] = this.root;
 			this.loaded = true;
+			staticMeshAssets[key] = this.root;
+			this.setProperties(this.root);
 		});
 	}
 }
@@ -376,9 +444,14 @@ class ImageAsset extends Asset {
 			texture.anisotropy = 0;
 
 			let material = new THREE.MeshBasicMaterial({ map: texture });
-			this.mesh = new THREE.Mesh(geometry, material);
-			this.mesh.rotation.x = this.mesh.rotation.y = this.mesh.rotation.z = 0;
-			this.mesh.position.x = this.mesh.position.y = this.mesh.position.z = 0;
+			this.root = new THREE.Mesh(geometry, material);
+			this.root.rotation.x = this.root.rotation.y = this.root.rotation.z = 0;
+			this.root.position.x = this.root.position.y = this.root.position.z = 0;
+
+			// // make mesh semi transparent
+			// this.rootSceneObject.material.transparent = true;
+			// this.rootSceneObject.material.opacity = 0.1;
+
 		});
 	}
 }
@@ -395,13 +468,9 @@ class GameObject {
 		this.position = new THREE.Vector3();
 		this.lastPosition = new THREE.Vector3();
 		this.rotation = new THREE.Vector3();
-		this.mesh = null;
-	}
-	updateMesh() {
-		if (this.mesh) {
-			this.mesh.position.set(this.position.x, this.position.y, this.position.z);
-			this.mesh.rotation.set(this.rotation.x, this.rotation.y, this.rotation.z);
-		}
+		this.root = null;
+		this.addedToScene = false;
+		this.scale = new THREE.Vector3(1, 1, 1);
 	}
 	update() { 
 		this.lastPosition = this.position.clone();
@@ -412,11 +481,11 @@ class N64 extends GameObject {
 	constructor() {
 		super();
 		this.name = "N64";
-		this.mesh = N64Asset.mesh.clone();
+		this.root = staticMeshAssets.N64.clone();
 	}
 	update() {
 		super.update();
-		this.mesh.rotation.y += 0.9 * Time.deltaTime;
+		this.root.rotation.y += 0.9 * Time.deltaTime;
 	}
 }
 
@@ -444,8 +513,7 @@ class Player extends GameObject {
 	constructor() {
 		super();
 		this.name = "Player";
-		this.mesh = N64Asset.mesh.clone();
-		this.mesh.scale.x = this.mesh.scale.y = this.mesh.scale.z = 0.5;
+		this.root = null; 
 		
 		this.state = Player.STATE.WAITING_FOR_GAME_START;
 
@@ -626,10 +694,11 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	console.log(mazeAsciiArt(cells));
 
 	// #region Assets
-	assets.push(new N64Asset());
-	// var wallAsset = new ImageAsset(wallUrl, SIDE, SIDE);
-	// assets.push(wallAsset);
-	// assets.push(ceilingAsset);
+	// iterate through staticMeshAssets
+
+	for (let key of Object.keys(staticMeshAssets)) {
+		assets.push(new GLTFAsset(key));
+	}
 
 	let floorAsset = new ImageAsset(
 		floorUrl, 
@@ -656,15 +725,15 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	await loadAllAssets();
 	// console.log("Loaded assets");
 
-	floorAsset.mesh.position.y = 0;
-	floorAsset.mesh.position.z = -SIDE * height * 0.5;
-	floorAsset.mesh.position.x = SIDE * width * 0.5;
-	window.fm = floorAsset.mesh;
+	floorAsset.root.position.y = 0;
+	floorAsset.root.position.z = -SIDE * height * 0.5;
+	floorAsset.root.position.x = SIDE * width * 0.5;
+	window.fm = floorAsset.root;
 
-	ceilingAsset.mesh.position.y = SIDE;
-	ceilingAsset.mesh.position.z = -SIDE * height * 0.5;
-	ceilingAsset.mesh.position.x = SIDE * width * 0.5;
-	window.cm = ceilingAsset.mesh;
+	ceilingAsset.root.position.y = SIDE;
+	ceilingAsset.root.position.z = -SIDE * height * 0.5;
+	ceilingAsset.root.position.x = SIDE * width * 0.5;
+	window.cm = ceilingAsset.root;
 
 	// #endregion
 
@@ -672,12 +741,20 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	gameObjects.push(new InputManager());
 	let player = new Player();
 	gameObjects.push(player);
+
+	let marbletest = new GameObject();
+	marbletest.root = staticMeshAssets.marbletest.clone();
+	window.mtg = marbletest;
+	marbletest.lastPosition = marbletest.position = new THREE.Vector3(SIDE/2, 0, -SIDE/2 - SIDE);
+	marbletest.scale = new THREE.Vector3(3,3,3);
+	gameObjects.push(marbletest);
+
 	// #endregion
 
 	// create threejs scene
 	const scene = new THREE.Scene();
 
-	const ambient = new THREE.AmbientLight(0x00FF00);
+	const ambient = new THREE.AmbientLight(0xFFFFFF);
 	scene.add(ambient);
 
 	let canvasWidth = 640;
@@ -686,11 +763,12 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	canvas.width = canvasWidth;
 	canvas.height = canvasHeight;
 
-	camera = new THREE.PerspectiveCamera(75, canvasWidth / canvasHeight, 0.1, 10000);
+	camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 0.1, 10000);
+
 	window.camera = camera;
 	
 	camera.position.x = 0.5 * SIDE;
-	camera.position.y = 0.5 * SIDE;// 5;
+	camera.position.y = 0.5 * SIDE;
 	camera.position.z = -0.5 * SIDE;
 
 	camera.rotation.x = 0;
@@ -703,8 +781,8 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	pointLight.position.set(0, 0, 0);
 	scene.add(pointLight);
 
-	scene.add(floorAsset.mesh);
-	scene.add(ceilingAsset.mesh);
+	scene.add(floorAsset.root);
+	scene.add(ceilingAsset.root);
 
 	// #region Walls
 	const ADDWALL_LEFT = 0;
@@ -713,7 +791,7 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	const ADDWALL_DOWN = 3;
 
 	function addWall(d, x, y) {
-		let wallMesh = wallAsset.mesh.clone();
+		let wallMesh = wallAsset.root.clone();
 		wallMeshes.push(wallMesh);
 		
 		wallMesh.position.y = 0;
@@ -829,6 +907,7 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 		Time.deltaTime = Time.time - lastUpdateTime;
 		lastUpdateTime = Time.time;
 
+		// #region collision
 		let oldPosition = player.lastPosition;
 		let newPosition = oldPosition.clone();
 
@@ -844,12 +923,28 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 
 		player.position.x = newPosition.x;
 		player.position.z = newPosition.z;
+		// #endregion
+
+		pointLight.position.set(player.position.x, player.position.y, player.position.z);
 
 		for (let gameObject of gameObjects) {
+			if (gameObject.root && !gameObject.addedToScene) {
+				scene.add(gameObject.root);
+				gameObject.addedToScene = true;
+			}
 			gameObject.update();
-			gameObject.updateMesh();
-			if (gameObject.mesh && gameObject.mesh.scale.y != globalYScale) {
-				gameObject.mesh.scale.y = globalYScale;
+			
+			let mesh = gameObject.root;
+			let position = gameObject.position;
+			let rotation = gameObject.rotation;
+			if (mesh) {
+				mesh.position.set(position.x, position.y, position.z);
+				mesh.rotation.set(rotation.x, rotation.y, rotation.z);
+
+				let scale = gameObject.scale.clone();
+				scale.y *= globalYScale;
+
+				mesh.scale.set(scale.x, scale.y, scale.z);
 			}
 		}
 		for (let wallMesh of wallMeshes) {
