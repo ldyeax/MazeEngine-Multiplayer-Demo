@@ -900,6 +900,7 @@ async function _maze(canvas, pWidth, pHeight, wallUrl, ceilingUrl, floorUrl) {
 	let marbletest = new MazeObject();
 	marbletest.root = staticMeshAssets.marbletest.clone();
 	window.mtg = marbletest;
+	console.log("marbletest");
 	marbletest.lastPosition = marbletest.position = new THREE.Vector3(-SIDE/2 + SIDE * 4, 0, SIDE/2 - SIDE * 4);
 	marbletest.scale = new THREE.Vector3(3,3,3);
 	marbletest.addScript(Spin).speed = -3;
