@@ -745,7 +745,7 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	let marbletest = new GameObject();
 	marbletest.root = staticMeshAssets.marbletest.clone();
 	window.mtg = marbletest;
-	marbletest.lastPosition = marbletest.position = new THREE.Vector3(SIDE/2, 0, -SIDE/2 - SIDE);
+	marbletest.lastPosition = marbletest.position = new THREE.Vector3(-SIDE/2 + SIDE * width, 0, -SIDE/2 - SIDE * width);
 	marbletest.scale = new THREE.Vector3(3,3,3);
 	gameObjects.push(marbletest);
 
