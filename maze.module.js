@@ -60,13 +60,22 @@ const textureLoader = new THREE.TextureLoader();
 // #region engine constants
 const SIDE = 320;
 const INV_SIDE = 1.0 / SIDE;
+const INV_SIDE_NEGATIVE = -INV_SIDE;
 let camera = null;
 const inv1000 = 1.0 / 1000.0;
 const wallMeshes = [];
-const gameObjects = [];
+const mazeObjects = [];
 const assets = [];
 const WALL_COLLISION_DIST = 0.1;
 const ONE_MINUS_WALL_COLLISION_DIST = 1.0 - WALL_COLLISION_DIST;
+
+let cells = [];
+let scene = null;
+
+let width = 4;
+let height = 4;
+
+let wallAsset = null;
 
 function loadAllAssets() {
 	return new Promise((resolve) => {
@@ -458,12 +467,35 @@ class ImageAsset extends Asset {
 
 // #endregion
 
-// #region GameObject
+// #region Behavior
 
-class GameObject {
+class MazeScript {
+	static count = 0;
+	constructor(mazeObject) {
+		this.id = MazeScript.count++;
+		this.mazeObject = mazeObject;
+	}
+	update() { }
+}
+
+class Spin extends MazeScript {
+	constructor(mazeObject) {
+		super(mazeObject);
+		this.speed = 1;
+	}
+	update() {
+		this.mazeObject.rotation.y += this.speed * Time.deltaTime;
+	}
+}
+
+// #endregion
+
+// #region MazeObject
+
+class MazeObject {
 	static count = 0;
 	constructor() {
-		this.id = GameObject.count++;
+		this.id = MazeObject.count++;
 		this.name = "";
 		this.position = new THREE.Vector3();
 		this.lastPosition = new THREE.Vector3();
@@ -471,13 +503,30 @@ class GameObject {
 		this.root = null;
 		this.addedToScene = false;
 		this.scale = new THREE.Vector3(1, 1, 1);
+		this.scripts = [];
 	}
 	update() { 
 		this.lastPosition = this.position.clone();
 	}
+	updateScripts () {
+		for (let script of this.scripts) {
+			script.update();
+		}
+	}
+	addScript(scriptClass) {
+		let ret = new scriptClass(this);
+		this.scripts.push(ret);
+		return ret;
+	}
+	getGridPosition() {
+		return new THREE.Vector2(
+			Math.floor(this.position.x * INV_SIDE), 
+			Math.floor(this.position.z * INV_SIDE_NEGATIVE)
+		);
+	}
 }
 
-class N64 extends GameObject {
+class N64 extends MazeObject {
 	constructor() {
 		super();
 		this.name = "N64";
@@ -495,7 +544,7 @@ class Input {
 	}
 }
 
-class Player extends GameObject {
+class Player extends MazeObject {
 	static STATE = {
 		WAITING_FOR_GAME_START: -1,
 		IDLE: 0,
@@ -546,6 +595,10 @@ class Player extends GameObject {
 	update() {
 		super.update();
 
+		// if (MazeManager.foundMarble) {
+		// 	return;
+		// }
+
 		if (Input.isDown(KEY_ACTIONS.LEFT)) {
 			this.rotation.y += Player.ROTATE_SPEED * Time.deltaTime;
 		}
@@ -579,7 +632,117 @@ class Player extends GameObject {
 	}
 }
 
-class InputManager extends GameObject {
+class MazeManager extends MazeObject {
+	static globalYScale = 0;
+	static foundMarble = false;
+	static foundMarble2 = false;
+	constructor() {
+		super();
+
+		// #region cells
+		cells = generateMaze(width, height);
+		console.log(mazeAsciiArt(cells));
+		// #endregion
+
+		// #region walls
+		const ADDWALL_LEFT = 0;
+		const ADDWALL_RIGHT = 1;
+		const ADDWALL_UP = 2;
+		const ADDWALL_DOWN = 3;
+	
+		function addWall(d, x, y) {
+			let wallMesh = wallAsset.root.clone();
+			wallMeshes.push(wallMesh);
+			
+			wallMesh.position.y = 0;
+			wallMesh.scale.y = 0;
+	
+			// left
+			if (d == 0) {
+				wallMesh.position.x = x * SIDE;
+				wallMesh.position.z = -y * SIDE + SIDE * -0.5;
+				wallMesh.rotation.y = Math.PI * 0.5;
+			}
+			//right
+			else if (d == 1) {
+				wallMesh.position.x = x * SIDE + SIDE;
+				wallMesh.position.z = -y * SIDE + SIDE * -0.5;
+				wallMesh.rotation.y = Math.PI * 0.5;
+			}
+			// up
+			else if (d == 2) {
+				// console.log(`making up at ${x}, ${y}`);
+	
+				wallMesh.position.x = x * SIDE + SIDE * 0.5;
+				wallMesh.position.z = -y * SIDE - SIDE;
+				wallMesh.rotation.y = 0;
+	
+				//wallMesh.scale.x = wallMesh.scale.y = wallMesh.scale.z = 0;
+			}
+			// down
+			else if (d == 3) {
+				// console.log(`making down at ${x}, ${y}`);
+	
+				wallMesh.position.x = x * SIDE + SIDE * 0.5;
+				wallMesh.position.z = -y * SIDE;
+				wallMesh.rotation.y = 0;
+			}
+	
+			scene.add(wallMesh);
+			
+			return wallMesh;
+		}
+		for (let y = 0; y < cells.length; y++) {
+			let row = cells[y];
+			for (let x = 0; x < row.length; x++) {
+				let cell = row[x];
+				if (cell.up) {
+					addWall(ADDWALL_UP, x, y);
+				}
+				if (cell.down) {
+					addWall(ADDWALL_DOWN, x, y);
+				}
+				if (cell.left) {
+					addWall(ADDWALL_LEFT, x, y);
+				}
+				if (cell.right) {
+					addWall(ADDWALL_RIGHT, x, y);
+				}
+			}
+		}
+		// #endregion
+	}
+	update() {
+		if (!MazeManager.foundMarble) {
+			MazeManager.globalYScale += Time.deltaTime;
+			if (MazeManager.globalYScale > 1) {
+				MazeManager.globalYScale = 1;
+			} 
+		} else if (!MazeManager.foundMarble2) {
+			MazeManager.globalYScale -= Time.deltaTime;
+			if (MazeManager.globalYScale < 0) {
+				MazeManager.globalYScale = 0;
+				// document.body.innerHTML = `<iframe style='width: 100%; height: 100%;' src="https://www.youtube.com/embed/fzKvGbQ9SgY?controls=0" title="Pudding!" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>;`
+				MazeManager.foundMarble2 = true;
+				let videoElement = document.createElement('video');
+				videoElement.src="assets/tinywag.mp4";
+				let videoTexture = new THREE.VideoTexture(videoElement);
+				videoTexture.minFilter = THREE.NearestFilter;
+				videoTexture.magFilter = THREE.NearestFilter;
+				for (let wallMesh of wallMeshes) {
+					wallMesh.material.map = videoTexture;
+					wallMesh.material.needsUpdate = true;
+				}
+				// set time to 0.5s and play
+				videoElement.currentTime = 0.7;
+				videoElement.play();
+				scene.remove(window.mtg.root);
+			}
+		}
+	}
+}
+
+class InputManager extends MazeObject {
 	constructor() {
 		super();
 		this.lastKeyStates = Object.assign({}, keyStates);
@@ -681,18 +844,9 @@ class Time {
 
 // #endregion
 
-async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
-	//console.log("width: " + width + ", height: " + height);
-	// console.log("wallurl: " + wallUrl);
-	// console.log("ceilingUrl: " + ceilingUrl);
-	// console.log("floorUrl: " + floorUrl);
-	let globalYScale = 0;
-	let invWidth = 1.0 / width;
-	let invHeight = 1.0 / height;
-
-	const cells = generateMaze(width, height);
-	console.log(mazeAsciiArt(cells));
-
+async function _maze(canvas, pWidth, pHeight, wallUrl, ceilingUrl, floorUrl) {
+	width = pWidth;
+	height = pHeight;
 	// #region Assets
 	// iterate through staticMeshAssets
 
@@ -714,16 +868,14 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	);
 	assets.push(ceilingAsset);
 
-	let wallAsset = new ImageAsset(
+	wallAsset = new ImageAsset(
 		wallUrl,
 		SIDE, SIDE, 0,
 		1, 1
 	);
 	assets.push(wallAsset);
 
-	// console.log("Loading assets");
 	await loadAllAssets();
-	// console.log("Loaded assets");
 
 	floorAsset.root.position.y = 0;
 	floorAsset.root.position.z = -SIDE * height * 0.5;
@@ -737,25 +889,29 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 
 	// #endregion
 
-	// #region Game Objects
-	gameObjects.push(new InputManager());
-	let player = new Player();
-	gameObjects.push(player);
+	scene = new THREE.Scene();
 
-	let marbletest = new GameObject();
+	// #region Game Objects
+
+	mazeObjects.push(new InputManager());
+	let player = new Player();
+	mazeObjects.push(player);
+
+	let marbletest = new MazeObject();
 	marbletest.root = staticMeshAssets.marbletest.clone();
 	window.mtg = marbletest;
-	marbletest.lastPosition = marbletest.position = new THREE.Vector3(-SIDE/2 + SIDE * 3, 0, -SIDE/2 - SIDE * 3);
+	marbletest.lastPosition = marbletest.position = new THREE.Vector3(-SIDE/2 + SIDE * 4, 0, SIDE/2 - SIDE * 4);
 	marbletest.scale = new THREE.Vector3(3,3,3);
-	gameObjects.push(marbletest);
+	marbletest.addScript(Spin).speed = -3;
+	mazeObjects.push(marbletest);
+
+	window.mazeman = new MazeManager();
+	mazeObjects.push(window.mazeman);
 
 	// #endregion
 
-	// create threejs scene
-	const scene = new THREE.Scene();
-
-	const ambient = new THREE.AmbientLight(0xFFFFFF);
-	scene.add(ambient);
+	// const ambient = new THREE.AmbientLight(0xFFFFFF);
+	// scene.add(ambient);
 
 	let canvasWidth = 640;
 	let canvasHeight = parseInt(canvasWidth * window.innerHeight / window.innerWidth);
@@ -785,71 +941,7 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	scene.add(ceilingAsset.root);
 
 	// #region Walls
-	const ADDWALL_LEFT = 0;
-	const ADDWALL_RIGHT = 1;
-	const ADDWALL_UP = 2;
-	const ADDWALL_DOWN = 3;
 
-	function addWall(d, x, y) {
-		let wallMesh = wallAsset.root.clone();
-		wallMeshes.push(wallMesh);
-		
-		wallMesh.position.y = 0;
-		wallMesh.scale.y = 0;
-
-		// left
-		if (d == 0) {
-			wallMesh.position.x = x * SIDE;
-			wallMesh.position.z = -y * SIDE + SIDE * -0.5;
-			wallMesh.rotation.y = Math.PI * 0.5;
-		}
-		//right
-		else if (d == 1) {
-			wallMesh.position.x = x * SIDE + SIDE;
-			wallMesh.position.z = -y * SIDE + SIDE * -0.5;
-			wallMesh.rotation.y = Math.PI * 0.5;
-		}
-		// up
-		else if (d == 2) {
-			// console.log(`making up at ${x}, ${y}`);
-
-			wallMesh.position.x = x * SIDE + SIDE * 0.5;
-			wallMesh.position.z = -y * SIDE - SIDE;
-			wallMesh.rotation.y = 0;
-
-			//wallMesh.scale.x = wallMesh.scale.y = wallMesh.scale.z = 0;
-		}
-		// down
-		else if (d == 3) {
-			// console.log(`making down at ${x}, ${y}`);
-
-			wallMesh.position.x = x * SIDE + SIDE * 0.5;
-			wallMesh.position.z = -y * SIDE;
-			wallMesh.rotation.y = 0;
-		}
-
-		scene.add(wallMesh);
-		
-		return wallMesh;
-	}
-	for (let y = 0; y < cells.length; y++) {
-		let row = cells[y];
-		for (let x = 0; x < row.length; x++) {
-			let cell = row[x];
-			if (cell.up) {
-				addWall(ADDWALL_UP, x, y);
-			}
-			if (cell.down) {
-				addWall(ADDWALL_DOWN, x, y);
-			}
-			if (cell.left) {
-				addWall(ADDWALL_LEFT, x, y);
-			}
-			if (cell.right) {
-				addWall(ADDWALL_RIGHT, x, y);
-			}
-		}
-	}
 	// #endregion
 
 	const renderer = new THREE.WebGLRenderer({ 
@@ -863,8 +955,6 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 
 	renderer.setSize(canvasWidth, canvasHeight, false);
 	renderer.setClearColor(0,0);
-
-	//gameObjects.push(new N64());
 
 	Time.time = Date.now() * inv1000;
 	let lastUpdateTime = Time.time;
@@ -903,12 +993,6 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 	}
 
 	function update() {
-		globalYScale += Time.deltaTime;
-		if (globalYScale > 1) {
-			globalYScale = 1;
-		}
-
-		requestAnimationFrame(update);
 		Time.time = Date.now() * inv1000;
 		Time.deltaTime = Time.time - lastUpdateTime;
 		lastUpdateTime = Time.time;
@@ -933,34 +1017,48 @@ async function _maze(canvas, width, height, wallUrl, ceilingUrl, floorUrl) {
 
 		pointLight.position.set(player.position.x, player.position.y, player.position.z);
 
-		for (let gameObject of gameObjects) {
-			if (gameObject.root && !gameObject.addedToScene) {
-				scene.add(gameObject.root);
-				gameObject.addedToScene = true;
+		for (let mazeObject of mazeObjects) {
+			if (mazeObject.root && !mazeObject.addedToScene) {
+				scene.add(mazeObject.root);
+				mazeObject.addedToScene = true;
 			}
-			gameObject.update();
-			
-			let mesh = gameObject.root;
-			let position = gameObject.position;
-			let rotation = gameObject.rotation;
+			mazeObject.update();
+			mazeObject.updateScripts();
+
+			let mesh = mazeObject.root;
+			let position = mazeObject.position;
+			let rotation = mazeObject.rotation;
 			if (mesh) {
 				mesh.position.set(position.x, position.y, position.z);
 				mesh.rotation.set(rotation.x, rotation.y, rotation.z);
 
-				let scale = gameObject.scale.clone();
-				scale.y *= globalYScale;
+				let scale = mazeObject.scale.clone();
+				scale.y *= MazeManager.globalYScale;
 
 				mesh.scale.set(scale.x, scale.y, scale.z);
 			}
 		}
 		for (let wallMesh of wallMeshes) {
-			if (wallMesh.scale.y != globalYScale) {
-				wallMesh.scale.y = globalYScale;
-				wallMesh.position.y = SIDE * 0.5 * globalYScale;
+			if (wallMesh.scale.y != MazeManager.globalYScale) {
+				let doScale = true;
+				if (MazeManager.foundMarble) {
+					doScale = false;
+				}
+				if (doScale) {
+					wallMesh.scale.y = MazeManager.globalYScale;
+					wallMesh.position.y = SIDE * 0.5 * MazeManager.globalYScale;
+				}
+
 			}
 		}
 
+		if (player.getGridPosition().equals(marbletest.getGridPosition())) {
+			MazeManager.foundMarble = true;
+		}
+
 		renderer.render(scene, camera);
+
+		requestAnimationFrame(update);
 	}
 	update();
 }
