@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset=utf-8>
+
+<title>Shader Test</title>
+
+<script type=importmap>
+{
+	"imports": {
+		"three": "./three/Three.js"
+	}
+}
+</script>
+
+<body>
+
+<canvas width=640 height=480 id=canvas></canvas>
+
+<script>
+import * as THREE from './three/Three.js';
+import _tracedLighting from "./shaders/tracedlighting.js";
+
+const textureLoader = new THREE.TextureLoader();
+const wallUrl = "img/wall.png";
+const wallLoaded = false;
+
+textureLoader.load(wallUrl, (texture) => {
+    wallLoaded = true;
+
+    let geometry = new THREE.PlaneGeometry(100, 100);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+    let material = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
+
+    window.wallMesh = new THREE.Mesh(geometry, material);
+    wallMesh.position.set(0, 0, -100);
+});
+
+function loadWall() {
+	return new Promise((resolve) => {
+		let interval = setInterval(() => {
+			
+			if (allLoaded) {
+				clearInterval(interval);
+				// console.log("Resolving");
+				resolve();
+			}
+		}, 100);
+	});
+}
+
+await loadWall();
+
+const scene = new THREE.Scene();
+
+const ambient = new THREE.AmbientLight(0xFFFFFF);
+ambient.intensity = 0;
+scene.add(ambient);
+
+scene.add(wallMesh);
+
+const renderer = new THREE.WebGLRenderer({
+    canvas: document.getElementById("canvas"),
+});
+
+function update() {
+    renderer.render(scene, camera);
+    requestAnimationFrame(update);
+}
+
+</script>

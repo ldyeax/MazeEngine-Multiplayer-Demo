@@ -1,11 +1,17 @@
 export const name = "maze";
 
 // #region shader imports
-import _tracedLighting from "./shaders/tracedLighting.js";
+import _tracedLighting from "./shaders/tracedlighting.js";
 
 const shaders = {
 	tracedLighting: _tracedLighting,
 }
+
+console.log("========");
+console.log(shaders.tracedLighting.vertex);
+console.log("========");
+console.log(shaders.tracedLighting.fragment);
+console.log("========");
 
 // #endregion
 
@@ -535,17 +541,18 @@ class ImageAsset extends Asset {
 			texture.minFilter = THREE.NearestFilter;
 			texture.anisotropy = 0;
 
-			let material = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
-			material.side = THREE.FrontSide;
+			// let material = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
+			// material.side = THREE.FrontSide;
 
-			// let material = new THREE.ShaderMaterial({
-			// 	uniforms: {
-			// 		texture: {
-			// 			value: texture
-			// 		},
-			// 	},
-				
-			// })
+			let material = new THREE.ShaderMaterial({
+				uniforms: {
+					texUnit: {
+						value: texture
+					},
+				},
+				vertexShader: shaders.tracedLighting.vertex,
+				fragmentShader: shaders.tracedLighting.fragment
+			});
 
 			this.root = new THREE.Mesh(geometry, material);
 			this.root.rotation.x = this.root.rotation.y = this.root.rotation.z = 0;
@@ -917,12 +924,12 @@ class InputManager extends MazeObject {
 }
 
 class MarbleTest extends MazeObject {
-	static# MARBLE_STATE = {
+	static #MARBLE_STATE = {
 		IDLE: 0,
 		SHRINKING: 1
 	}
 
-	# state = MarbleTest.#MARBLE_STATE.IDLE;
+	#state = MarbleTest.#MARBLE_STATE.IDLE;
 
 	constructor(x, y) {
 		super();
