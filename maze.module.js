@@ -65,6 +65,7 @@ const INV_SIDE_NEGATIVE = -INV_SIDE;
 const HALF_SIDE = 0.5 * SIDE;
 const HALF_N_SIDE = -HALF_SIDE;
 let camera = null;
+let renderer = null;
 const inv1000 = 1.0 / 1000.0;
 const wallMeshes = [];
 let mazeObjects = [];
@@ -105,8 +106,8 @@ function loadAllAssets() {
 	});
 }
 
-let canvasWidth = 640;
-let canvasHeight = parseInt(canvasWidth * window.innerHeight / window.innerWidth);
+let canvasWidth = null;
+let canvasHeight = null;
 
 // #endregion
 
@@ -150,6 +151,17 @@ function isCollidingWithWalls(position) {
 
 	return collision;
 }
+
+function updateCanvasSize() {
+	canvasWidth = 640;
+	canvasHeight = parseInt(canvasWidth * window.innerHeight / window.innerWidth);
+
+	renderer.setSize(canvasWidth, canvasHeight, false);
+
+	camera.aspect = canvasWidth / canvasHeight;
+	camera.updateProjectionMatrix();
+}
+
 // #endregion
 
 // #region cardinals
@@ -514,7 +526,7 @@ class ImageAsset extends Asset {
 
 // #endregion
 
-// #region Behavior
+// #region MazeScript
 
 class MazeScript {
 	static count = 0;
@@ -539,7 +551,6 @@ class Spin extends MazeScript {
 
 // #region MazeObject
 
-
 class MazeObject {
 	static count = 0;
 
@@ -559,6 +570,8 @@ class MazeObject {
 	destroyed = false;
 	
 	id = 0;
+
+	scaleWithGlobalY = true;
 
 	constructor() {
 		this.id = MazeObject.count++;
@@ -636,6 +649,8 @@ class Player extends MazeObject {
 		this.lastPosition = this.position.clone();
 
 		player = this;
+
+		this.scaleWithGlobalY = false;
 	}
 
 	moveAndRotateToTarget() {
@@ -926,6 +941,8 @@ class MazeCamera extends MazeObject {
 		camera.rotation.z = 0;
 
 		this.root = camera;
+
+		this.scaleWithGlobalY = false;
 	}
 
 	update() {
@@ -1029,24 +1046,33 @@ async function _maze(canvas) {
 
 	// #endregion
 
-	const renderer = new THREE.WebGLRenderer({ 
+	// #region renderer
+	renderer = new THREE.WebGLRenderer({ 
 		antialias: false, 
 		canvas: canvas,
 		alpha: true
 	});
-
-	renderer.setSize(canvasWidth, canvasHeight, false);
 	renderer.setClearColor(0,0);
+	// #endregion
 
+	// #region updateCanvasSize
+	window.addEventListener("resize", updateCanvasSize);
+	updateCanvasSize();
+	// #endregion
+
+	//#region Time
 	Time.time = Date.now() * inv1000;
 	let lastUpdateTime = Time.time;
-
+	// #endregion
+	
 	function update() {
+		// #region Time
 		Time.time = Date.now() * inv1000;
 		Time.deltaTime = Time.time - lastUpdateTime;
 		lastUpdateTime = Time.time;
+		// #endregion
 
-		// #region collision
+		// #region player collision
 		let oldPosition = player.lastPosition;
 		let newPosition = oldPosition.clone();
 
@@ -1064,6 +1090,7 @@ async function _maze(canvas) {
 		player.position.z = newPosition.z;
 		// #endregion
 
+		// #region destroy
 		let foundDestroyed = false;
 		for (let mazeObject of mazeObjects) {
 			if (mazeObject.destroyed) {
@@ -1076,7 +1103,9 @@ async function _maze(canvas) {
 		if (foundDestroyed) {
 			mazeObjects = mazeObjects.filter(mazeObject => !mazeObject.destroyed);
 		}
+		// #endregion
 
+		// #region update mazeObjects
 		for (let mazeObject of mazeObjects) {
 			if (mazeObject.root && !mazeObject.addedToScene) {
 				console.log(`Adding to scene: ${mazeObject.name}`);
@@ -1087,18 +1116,21 @@ async function _maze(canvas) {
 			mazeObject.updateScripts();
 
 			let root = mazeObject.root;
-			let position = mazeObject.position;
-			let rotation = mazeObject.rotation;
 			if (root) {
+				let position = mazeObject.position;
+				let rotation = mazeObject.rotation;
+
 				root.position.set(position.x, position.y, position.z);
 				root.rotation.set(rotation.x, rotation.y, rotation.z);
 
 				let scale = mazeObject.scale.clone();
-				scale.y *= MazeManager.globalYScale;
-
+				if (mazeObject.scaleWithGlobalY) {
+					scale.y *= MazeManager.globalYScale;
+				}
 				root.scale.set(scale.x, scale.y, scale.z);
 			}
 		}
+		// #endregion
 		for (let wallMesh of wallMeshes) {
 			if (wallMesh.scale.y != MazeManager.globalYScale) {
 				let doScale = true;
@@ -1109,7 +1141,6 @@ async function _maze(canvas) {
 					wallMesh.scale.y = MazeManager.globalYScale;
 					wallMesh.position.y = SIDE * 0.5 * MazeManager.globalYScale;
 				}
-
 			}
 		}
 
