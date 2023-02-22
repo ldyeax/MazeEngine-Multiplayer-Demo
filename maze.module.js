@@ -1,5 +1,14 @@
 export const name = "maze";
 
+// #region shader imports
+import _tracedLighting from "./shaders/tracedLighting.js";
+
+const shaders = {
+	tracedLighting: _tracedLighting,
+}
+
+// #endregion
+
 // #region keymap
 
 const KEYSTATE_DOWN = 1;
@@ -26,7 +35,7 @@ keyStates[KEY_ACTIONS.BACKWARD] = KEYSTATE_NONE;
 keyStates[KEY_ACTIONS.LEFT] = KEYSTATE_NONE;
 keyStates[KEY_ACTIONS.RIGHT] = KEYSTATE_NONE;
 
-window.addEventListener("keydown", function(e) {
+window.addEventListener("keydown", function (e) {
 	let code = e.code;
 	// console.log(`Keydown: ${code}`);
 	for (let actionName in KEY_ACTIONS) {
@@ -41,7 +50,7 @@ window.addEventListener("keydown", function(e) {
 		}
 	}
 });
-window.addEventListener("keyup", function(e) {
+window.addEventListener("keyup", function (e) {
 	let code = e.code;
 	for (let actionName in KEY_ACTIONS) {
 		let actionId = KEY_ACTIONS[actionName];
@@ -121,6 +130,7 @@ function gridToWorld(vector2_x, y) {
 	return new THREE.Vector3(vector2.x * SIDE, 0, vector2.y * SIDE);
 }
 let noclip = window.location.search.indexOf("noclip") != -1;
+
 function isCollidingWithWalls(position) {
 	if (noclip) {
 		return false;
@@ -169,6 +179,7 @@ const NORTH = 0;
 const EAST = 1;
 const SOUTH = 2;
 const WEST = 3;
+
 function clampCardinal(cardinal) {
 	let ret = cardinal % 4;
 	if (ret < 0) {
@@ -204,7 +215,9 @@ CARDINAL_ROTATION_SIGN[WEST][WEST] = 0;
 // #endregion
 
 import * as THREE from './three/Three.js'
-import {GLTFLoader} from "./three_examples/jsm/loaders/GLTFLoader.js"
+import {
+	GLTFLoader
+} from "./three_examples/jsm/loaders/GLTFLoader.js"
 
 window.THREE = THREE;
 // import CubeGeometry
@@ -233,7 +246,9 @@ export function generateMaze(width, height) {
 	}
 
 	if (width * height == 1) {
-		return [[new Cell()]];
+		return [
+			[new Cell()]
+		];
 	}
 
 	let ret = [];
@@ -243,6 +258,7 @@ export function generateMaze(width, height) {
 			ret[y].push(new Cell());
 		}
 	}
+
 	function secludedCellExists() {
 		for (let y = 0; y < height; y++) {
 			for (let x = 0; x < width; x++) {
@@ -253,6 +269,7 @@ export function generateMaze(width, height) {
 		}
 		return false;
 	}
+
 	function tryConnectCells(y1, x1, y2, x2) {
 		if (x1 < 0 || x1 >= width || y1 < 0 || y1 >= height) {
 			return false;
@@ -339,23 +356,26 @@ export function generateMaze(width, height) {
 					x--;
 					break;
 				}
-			case 1:
-				if (tryConnectCells(y, x, y, x + 1)) {
-					x++;
-					break;
-				}
-			case 2:
-				if (tryConnectCells(y, x, y - 1, x)) {
-					y--;
-					break;
-				}
-			case 3:
-				if (tryConnectCells(y, x, y + 1, x)) {
-					y++;
-					break;
-				}
+				case 1:
+					if (tryConnectCells(y, x, y, x + 1)) {
+						x++;
+						break;
+					}
+					case 2:
+						if (tryConnectCells(y, x, y - 1, x)) {
+							y--;
+							break;
+						}
+						case 3:
+							if (tryConnectCells(y, x, y + 1, x)) {
+								y++;
+								break;
+							}
 		}
-		trail.push({ x: x, y: y });
+		trail.push({
+			x: x,
+			y: y
+		});
 	}
 
 	// console.log("logging ascii");
@@ -441,7 +461,7 @@ class GLTFAsset extends Asset {
 
 	setProperties(gltfObject, properties = {}, depth = 0) {
 		// let l = function(s){ prependLog(s, depth); }
-		let l = function(_) {};
+		let l = function (_) {};
 		l(`setProperties(${gltfObject.name}, ${JSON.stringify(properties)}))`);
 		properties = Object.assign({}, GLTFAsset.defaultProperties, properties);
 		if (gltfObject.userData && gltfObject.userData.three_props) {
@@ -496,7 +516,7 @@ class GLTFAsset extends Asset {
 }
 
 class ImageAsset extends Asset {
-	constructor (url, width, height, repeatX, repeatY) {
+	constructor(url, width, height, repeatX, repeatY) {
 		super();
 		textureLoader.load(url, (texture) => {
 			this.loaded = true;
@@ -517,6 +537,16 @@ class ImageAsset extends Asset {
 
 			let material = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
 			material.side = THREE.FrontSide;
+
+			// let material = new THREE.ShaderMaterial({
+			// 	uniforms: {
+			// 		texture: {
+			// 			value: texture
+			// 		},
+			// 	},
+				
+			// })
+
 			this.root = new THREE.Mesh(geometry, material);
 			this.root.rotation.x = this.root.rotation.y = this.root.rotation.z = 0;
 			this.root.position.x = this.root.position.y = this.root.position.z = 0;
@@ -536,7 +566,7 @@ class MazeScript {
 		this.id = MazeScript.count++;
 		this.mazeObject = mazeObject;
 	}
-	update() { }
+	update() {}
 }
 
 class Spin extends MazeScript {
@@ -565,12 +595,12 @@ class MazeObject {
 
 	// mesh / gltf scene
 	root = null;
-	
+
 	scripts = [];
 
 	addedToScene = false;
 	destroyed = false;
-	
+
 	id = 0;
 
 	scaleWithGlobalY = true;
@@ -579,10 +609,10 @@ class MazeObject {
 		this.id = MazeObject.count++;
 	}
 
-	update() { 
+	update() {
 		this.lastPosition = this.position.clone();
 	}
-	updateScripts () {
+	updateScripts() {
 		for (let script of this.scripts) {
 			script.update();
 		}
@@ -594,7 +624,7 @@ class MazeObject {
 	}
 	getGridPosition() {
 		return new THREE.Vector2(
-			Math.floor(this.position.x * INV_SIDE), 
+			Math.floor(this.position.x * INV_SIDE),
 			Math.floor(this.position.z * INV_SIDE_NEGATIVE)
 		);
 	}
@@ -635,8 +665,8 @@ class Player extends MazeObject {
 	constructor() {
 		super();
 		this.name = "Player";
-		this.root = null; 
-		
+		this.root = null;
+
 		this.state = Player.STATE.WAITING_FOR_GAME_START;
 
 		this.currentFacing = NORTH;
@@ -722,16 +752,16 @@ class MazeManager extends MazeObject {
 		const ADDWALL_RIGHT = 1;
 		const ADDWALL_UP = 2;
 		const ADDWALL_DOWN = 3;
-	
+
 		function addWall(d, x, y) {
 			// if (d != ADDWALL_UP) return;
 
 			let wallMesh = wallAsset.root.clone();
 			wallMeshes.push(wallMesh);
-			
+
 			wallMesh.position.y = 0;
 			wallMesh.scale.y = 0;
-	
+
 			// left
 			if (d == ADDWALL_LEFT) {
 				wallMesh.position.x = x * SIDE;
@@ -747,24 +777,24 @@ class MazeManager extends MazeObject {
 			// up
 			else if (d == ADDWALL_UP) {
 				// console.log(`making up at ${x}, ${y}`);
-	
+
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
 				wallMesh.position.z = -y * SIDE - SIDE;
 				wallMesh.rotation.y = 0;
-	
+
 				//wallMesh.scale.x = wallMesh.scale.y = wallMesh.scale.z = 0;
 			}
 			// down
 			else if (d == ADDWALL_DOWN) {
 				// console.log(`making down at ${x}, ${y}`);
-	
+
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
 				wallMesh.position.z = -y * SIDE;
 				wallMesh.rotation.y = Math.PI;
 			}
-	
+
 			scene.add(wallMesh);
-			
+
 			return wallMesh;
 		}
 		for (let y = 0; y < cells.length; y++) {
@@ -887,12 +917,12 @@ class InputManager extends MazeObject {
 }
 
 class MarbleTest extends MazeObject {
-	static #MARBLE_STATE = {
+	static# MARBLE_STATE = {
 		IDLE: 0,
 		SHRINKING: 1
 	}
 
-	#state = MarbleTest.#MARBLE_STATE.IDLE;
+	# state = MarbleTest.#MARBLE_STATE.IDLE;
 
 	constructor(x, y) {
 		super();
@@ -935,11 +965,11 @@ class MazeCamera extends MazeObject {
 		camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 0.1, 10000);
 
 		window.camera = camera;
-		
+
 		camera.position.x = 0.5 * SIDE;
 		camera.position.y = 0.5 * SIDE;
 		camera.position.z = -0.5 * SIDE;
-	
+
 		camera.rotation.x = 0;
 		camera.rotation.y = 0;
 		camera.rotation.z = 0;
@@ -979,7 +1009,7 @@ async function _maze(canvas) {
 	}
 
 	window.floorAsset = new ImageAsset(
-		floorUrl, 
+		floorUrl,
 		SIDE * width, SIDE * height,
 		width, height
 	);
@@ -1054,12 +1084,12 @@ async function _maze(canvas) {
 	// #endregion
 
 	// #region renderer
-	renderer = new THREE.WebGLRenderer({ 
-		antialias: false, 
+	renderer = new THREE.WebGLRenderer({
+		antialias: false,
 		canvas: canvas,
 		alpha: true
 	});
-	renderer.setClearColor(0,0);
+	renderer.setClearColor(0, 0);
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	renderer.shadowMap.renderSingleSided = false;
@@ -1075,11 +1105,11 @@ async function _maze(canvas) {
 	Time.time = Date.now() * inv1000;
 	let lastUpdateTime = Time.time;
 	// #endregion
-	
+
 	function update() {
 		// pointLight.position.copy(camera.position);
 		// pointLight.rotation.copy(camera.rotation);
-		
+
 		// #region Time
 		Time.time = Date.now() * inv1000;
 		Time.deltaTime = Time.time - lastUpdateTime;
@@ -1165,4 +1195,6 @@ async function _maze(canvas) {
 	update();
 }
 
-export {_maze as initMaze};
+export {
+	_maze as initMaze
+};
