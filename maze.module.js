@@ -990,7 +990,7 @@ async function _maze(canvas) {
 	let ceilingAsset = new ImageAsset(
 		ceilingUrl,
 		SIDE * width, 0, SIDE * height,
-		width, height
+		width * 2, height * 2
 	);
 	assets.push(ceilingAsset);
 
