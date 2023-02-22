@@ -65,7 +65,7 @@ const INV_SIDE_NEGATIVE = -INV_SIDE;
 const HALF_SIDE = 0.5 * SIDE;
 const HALF_N_SIDE = -HALF_SIDE;
 let camera = null;
-let renderer = null;
+window.renderer = null;
 const inv1000 = 1.0 / 1000.0;
 const wallMeshes = [];
 let mazeObjects = [];
@@ -76,8 +76,8 @@ const ONE_MINUS_WALL_COLLISION_DIST = 1.0 - WALL_COLLISION_DIST;
 let cells = [];
 let scene = null;
 
-let width = 4;
-let height = 4;
+let width = 6;
+let height = 6;
 
 let wallAsset = null;
 
@@ -205,6 +205,8 @@ CARDINAL_ROTATION_SIGN[WEST][WEST] = 0;
 
 import * as THREE from './three/Three.js'
 import {GLTFLoader} from "./three_examples/jsm/loaders/GLTFLoader.js"
+
+window.THREE = THREE;
 // import CubeGeometry
 
 // #region Maze generation
@@ -432,7 +434,9 @@ function prependLog(str, n) {
 class GLTFAsset extends Asset {
 	static defaultProperties = {
 		side: 2,
-		transparent: false
+		transparent: false,
+		receiveShadow: true,
+		castShadow: true,
 	}
 
 	setProperties(gltfObject, properties = {}, depth = 0) {
@@ -492,13 +496,13 @@ class GLTFAsset extends Asset {
 }
 
 class ImageAsset extends Asset {
-	constructor (url, width, height, depth, repeatX, repeatY) {
+	constructor (url, width, height, repeatX, repeatY) {
 		super();
 		textureLoader.load(url, (texture) => {
 			this.loaded = true;
 			this.texture = texture;
 
-			let geometry = new THREE.BoxGeometry(width, height, depth);
+			let geometry = new THREE.PlaneGeometry(width, height);
 			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
 			texture.offset.x = 0;
@@ -511,15 +515,13 @@ class ImageAsset extends Asset {
 			texture.minFilter = THREE.NearestFilter;
 			texture.anisotropy = 0;
 
-			let material = new THREE.MeshBasicMaterial({ map: texture });
+			let material = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
+			material.side = THREE.FrontSide;
 			this.root = new THREE.Mesh(geometry, material);
 			this.root.rotation.x = this.root.rotation.y = this.root.rotation.z = 0;
 			this.root.position.x = this.root.position.y = this.root.position.z = 0;
-
-			// // make mesh semi transparent
-			// this.rootSceneObject.material.transparent = true;
-			// this.rootSceneObject.material.opacity = 0.1;
-
+			this.root.receiveShadow = true;
+			this.root.castShadow = true;
 		});
 	}
 }
@@ -722,6 +724,8 @@ class MazeManager extends MazeObject {
 		const ADDWALL_DOWN = 3;
 	
 		function addWall(d, x, y) {
+			// if (d != ADDWALL_UP) return;
+
 			let wallMesh = wallAsset.root.clone();
 			wallMeshes.push(wallMesh);
 			
@@ -729,19 +733,19 @@ class MazeManager extends MazeObject {
 			wallMesh.scale.y = 0;
 	
 			// left
-			if (d == 0) {
+			if (d == ADDWALL_LEFT) {
 				wallMesh.position.x = x * SIDE;
-				wallMesh.position.z = -y * SIDE + SIDE * -0.5;
+				wallMesh.position.z = -y * SIDE - SIDE * 0.5;
 				wallMesh.rotation.y = Math.PI * 0.5;
 			}
 			//right
-			else if (d == 1) {
+			else if (d == ADDWALL_RIGHT) {
 				wallMesh.position.x = x * SIDE + SIDE;
 				wallMesh.position.z = -y * SIDE + SIDE * -0.5;
-				wallMesh.rotation.y = Math.PI * 0.5;
+				wallMesh.rotation.y = Math.PI * -0.5;
 			}
 			// up
-			else if (d == 2) {
+			else if (d == ADDWALL_UP) {
 				// console.log(`making up at ${x}, ${y}`);
 	
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
@@ -751,12 +755,12 @@ class MazeManager extends MazeObject {
 				//wallMesh.scale.x = wallMesh.scale.y = wallMesh.scale.z = 0;
 			}
 			// down
-			else if (d == 3) {
+			else if (d == ADDWALL_DOWN) {
 				// console.log(`making down at ${x}, ${y}`);
 	
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
 				wallMesh.position.z = -y * SIDE;
-				wallMesh.rotation.y = 0;
+				wallMesh.rotation.y = Math.PI;
 			}
 	
 			scene.add(wallMesh);
@@ -947,18 +951,12 @@ class MazeCamera extends MazeObject {
 
 	update() {
 		super.update();
-		// let forwards = new THREE.Vector3(0, 0, 1);
-		// forwards.applyQuaternion(player.rotation);
-		// forwards.normalize();
-		// let position = player.position.clone();
-		// position.addScaledVector(forwards, -0.5 * SIDE);
-		// position.y += 0.5 * SIDE;
-		// this.position = position;
-		// this.rotation = player.rotation;
 
-		this.position = player.position.clone();
-		this.position.y += 0.5 * SIDE;
+		let position = player.position.clone();
+		position.y = 0.5 * SIDE;
+		this.position = position;
 		this.rotation = player.rotation;
+
 	}
 }
 // #endregion
@@ -980,28 +978,31 @@ async function _maze(canvas) {
 		assets.push(new GLTFAsset(key));
 	}
 
-	let floorAsset = new ImageAsset(
+	window.floorAsset = new ImageAsset(
 		floorUrl, 
-		SIDE * width, 0, SIDE * height,
+		SIDE * width, SIDE * height,
 		width, height
 	);
 	assets.push(floorAsset);
 
-	let ceilingAsset = new ImageAsset(
+	window.ceilingAsset = new ImageAsset(
 		ceilingUrl,
-		SIDE * width, 0, SIDE * height,
+		SIDE * width, SIDE * height,
 		width * 2, height * 2
 	);
 	assets.push(ceilingAsset);
 
 	wallAsset = new ImageAsset(
 		wallUrl,
-		SIDE, SIDE, 0,
+		SIDE, SIDE,
 		1, 1
 	);
 	assets.push(wallAsset);
 
 	await loadAllAssets();
+
+	floorAsset.root.rotation.x = -Math.PI * 0.5;
+	ceilingAsset.root.rotation.x = Math.PI * 0.5;
 
 	floorAsset.root.position.y = 0;
 	floorAsset.root.position.z = -SIDE * height * 0.5;
@@ -1018,9 +1019,15 @@ async function _maze(canvas) {
 	scene = new THREE.Scene();
 
 	const ambient = new THREE.AmbientLight(0xFFFFFF);
+	ambient.intensity = 0;
 	scene.add(ambient);
-	const pointLight = new THREE.PointLight(0xFFFFFF);
-	pointLight.position.set(0, 0, 0);
+
+	window.pointLight = new THREE.PointLight(0xFFFFFF);
+	pointLight.position.set(HALF_SIDE, HALF_SIDE, -HALF_SIDE);
+	pointLight.intensity = 1;
+	pointLight.castShadow = true;
+	pointLight.receiveShadow = true;
+	pointLight.shadow.camera.far = Infinity;
 	scene.add(pointLight);
 
 	scene.add(floorAsset.root);
@@ -1053,6 +1060,10 @@ async function _maze(canvas) {
 		alpha: true
 	});
 	renderer.setClearColor(0,0);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	renderer.shadowMap.renderSingleSided = false;
+	renderer.shadowMap.renderReverseSided = false;
 	// #endregion
 
 	// #region updateCanvasSize
@@ -1066,6 +1077,9 @@ async function _maze(canvas) {
 	// #endregion
 	
 	function update() {
+		// pointLight.position.copy(camera.position);
+		// pointLight.rotation.copy(camera.rotation);
+		
 		// #region Time
 		Time.time = Date.now() * inv1000;
 		Time.deltaTime = Time.time - lastUpdateTime;
