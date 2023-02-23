@@ -546,7 +546,7 @@ class ImageAsset extends Asset {
 
 			let material = new THREE.ShaderMaterial({
 				uniforms: {
-					texUnit: {
+					texture1: {
 						value: texture
 					},
 				},

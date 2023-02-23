@@ -40,7 +40,7 @@ textureLoader.load(wallUrl, (texture) => {
         vertexShader: tracedLighting.vertex,
         fragmentShader: tracedLighting.fragment,
         uniforms: {
-            texUnit: { value: texture },
+            texture1: { value: texture },
         },
     });
     let mesh2 = new THREE.Mesh(geometry, material2);

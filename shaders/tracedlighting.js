@@ -1,62 +1,27 @@
-let vertex = `#version 330
+let vertex = `
+precision mediump float;
 
-layout (std140) uniform Matrices {
-	mat4 m_pvm;
-	mat4 m_viewModel;
-	mat3 m_normal;
-};
+varying vec2 vUv;
 
-layout (std140) uniform Lights {
-	vec3 l_dir;	// camera space
-};
+void main() {
+	vUv = uv;
 
-in vec4 position;   // local space
-in vec3 normal;	 // local space
-in vec2 texCoord;
-
-// the data to be sent to the fragment shader
-out Data {
-	vec3 normal;
-	vec4 eye;
-	vec2 texCoord;
-} DataOut;
-
-void main () {
-
-	DataOut.normal = normalize(m_normal * normal);
-	DataOut.eye = -(m_viewModel * position);
-	DataOut.texCoord = texCoord;
-
-	gl_Position = m_pvm * position; 
+	gl_Position =   projectionMatrix * 
+					modelViewMatrix * 
+					vec4(position,1.0);
 }
 `;
 
-let fragment = `#version 330
+let fragment = `
+precision mediump float;
 
-layout (std140) uniform Material {
-	vec4 diffuse;
-	vec4 ambient;
-	vec4 specular;
-	float shininess;
-};
+uniform sampler2D texture1;
 
-layout (std140) uniform Lights {
-	vec3 l_dir;	// camera space
-};
-
-in Data {
-	vec3 normal;
-	vec4 eye;
-	vec2 texCoord;
-} DataIn;
-
-uniform sampler2D texUnit;
-
-out vec4 colorOut;
+varying vec2 vUv;
 
 void main() {
-	vec4 texColor = texture(texUnit, DataIn.texCoord);
-	colorOut = textColor;
+	gl_FragColor = texture2D(texture1, vUv); // Displays Nothing
+	//gl_FragColor = vec4(0.5, 0.2, 1.0, 1.0); // Works; Displays Flat Color
 }
 `;
 
