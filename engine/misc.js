@@ -1,4 +1,4 @@
-import * as THREE from '../three/Three.js';
+import * as THREE from "three";
 
 export default {
 	INV_1000: 1.0 / 1000.0,

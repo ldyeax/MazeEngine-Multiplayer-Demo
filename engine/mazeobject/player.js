@@ -1,5 +1,5 @@
-import MazeObject from "../mazeobject.js";
-import * as THREE from "../../three/Three.js";
+import MazeObject from "engine/mazeobject.js";
+import * as THREE from "three";
 
 const KEY_ACTIONS = {
 	FORWARD: 1,

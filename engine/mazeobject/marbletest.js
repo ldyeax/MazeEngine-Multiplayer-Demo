@@ -1,7 +1,7 @@
-import MazeObject from "../mazeobject.js";
-import misc  from "../misc.js";
-import Spin from "../mazescript/spin.js";
-import * as THREE from "../../three/Three.js";
+import MazeObject from "engine/mazeobject.js";
+import misc  from "engine/misc.js";
+import Spin from "mazescript/spin.js";
+import * as THREE from "three";
 
 let mazeEngine = null;
 

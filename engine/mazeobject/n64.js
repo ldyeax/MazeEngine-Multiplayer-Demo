@@ -1,4 +1,4 @@
-import MazeObject from "../mazeobject.js";
+import MazeObject from "engine/mazeobject.js";
 
 export default class N64 extends MazeObject {
 	mazeEngine = null;

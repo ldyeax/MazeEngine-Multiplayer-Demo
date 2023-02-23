@@ -1,5 +1,5 @@
-import MazeObject from '../mazeobject.js';
-import * as THREE from '../../three/Three.js';
+import MazeObject from "engine/mazeobject.js";
+import * as THREE from "three";
 
 const ADDWALL_LEFT = 0;
 const ADDWALL_RIGHT = 1;
@@ -17,9 +17,7 @@ export default class Walls extends MazeObject {
 		let cells = mazeEngine.cells;
 		let SIDE = mazeEngine.SIDE;
 
-		// #region walls
-
-		this.root = new THREE.Scene();
+		this.root = new THREE.Group();
 
 		let walls = this;
 
@@ -30,10 +28,12 @@ export default class Walls extends MazeObject {
 			walls.wallMeshes.push(wallMesh);
 
 			wallMesh.position.y = 0;
-			wallMesh.scale.y = 0;
+			wallMesh.scale.y = 1;
 
 			let cell = cells[y][x];
 			wallMesh.userData.cell = cell;
+
+			wallMesh.scale.set(SIDE, SIDE, 1);
 
 			// left
 			if (d == ADDWALL_LEFT) {
@@ -91,10 +91,9 @@ export default class Walls extends MazeObject {
 				}
 			}
 		}
-		// #endregion
 	}
 	update() {
-		this.root.position.y = this.mazeEngine.SIDE * 0.5 * this.mazeEngine.globalYScale;
+		this.position.y = this.mazeEngine.SIDE * 0.5 * this.mazeEngine.globalYScale;
 
 		//console.log("====");
 		for (let wallMesh of this.wallMeshes) {

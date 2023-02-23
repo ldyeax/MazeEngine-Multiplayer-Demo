@@ -1,4 +1,4 @@
-import MazeObject from "../mazeobject.js";
+import MazeObject from "engine/mazeobject.js";
 
 const KEYSTATE_DOWN = 1;
 const KEYSTATE_HELD = 2;
@@ -18,31 +18,6 @@ keyMap[KEY_ACTIONS.BACKWARD] = "KeyS";
 keyMap[KEY_ACTIONS.LEFT] = "KeyA";
 keyMap[KEY_ACTIONS.RIGHT] = "KeyD";
 
-window.addEventListener("keydown", function (e) {
-	let code = e.code;
-	// console.log(`Keydown: ${code}`);
-	for (let actionName in KEY_ACTIONS) {
-		let actionId = KEY_ACTIONS[actionName];
-		if (keyMap[actionId] === code) {
-			let existingState = keyStates[actionId];
-			if (existingState !== KEYSTATE_HELD) {
-				keyStates[actionId] = KEYSTATE_DOWN;
-				// console.log(`Keydown: ${actionName}`);
-				// console.log(keyStates);
-			}
-		}
-	}
-});
-window.addEventListener("keyup", function (e) {
-	let code = e.code;
-	for (let actionName in KEY_ACTIONS) {
-		let actionId = KEY_ACTIONS[actionName];
-		if (keyMap[actionId] === code) {
-			keyStates[actionId] = KEYSTATE_UP;
-		}
-	}
-});
-
 export default class InputManager extends MazeObject {
 	constructor(mazeEngine) {
 		super(mazeEngine);
@@ -54,10 +29,36 @@ export default class InputManager extends MazeObject {
 		keyStates[KEY_ACTIONS.RIGHT] = KEYSTATE_NONE;
 
 		this.lastKeyStates = Object.assign({}, keyStates);
+
+		window.addEventListener("keydown", function (e) {
+			let code = e.code;
+			// console.log(`Keydown: ${code}`);
+			for (let actionName in KEY_ACTIONS) {
+				let actionId = KEY_ACTIONS[actionName];
+				if (keyMap[actionId] === code) {
+					let existingState = keyStates[actionId];
+					if (existingState !== KEYSTATE_HELD) {
+						keyStates[actionId] = KEYSTATE_DOWN;
+						// console.log(`Keydown: ${actionName}`);
+						// console.log(keyStates);
+					}
+				}
+			}
+		});
+		window.addEventListener("keyup", function (e) {
+			let code = e.code;
+			for (let actionName in KEY_ACTIONS) {
+				let actionId = KEY_ACTIONS[actionName];
+				if (keyMap[actionId] === code) {
+					keyStates[actionId] = KEYSTATE_UP;
+				}
+			}
+		});
 	}
 	// sets key states based on current (set by addEventListeners above) and last states
 	update() {
 		super.update();
+		let keyStates = this.keyStates;
 		for (let actionName in KEY_ACTIONS) {
 			let actionId = KEY_ACTIONS[actionName];
 			let currentKeyState = keyStates[actionId];

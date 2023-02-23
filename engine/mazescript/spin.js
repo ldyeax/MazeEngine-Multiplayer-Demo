@@ -1,4 +1,4 @@
-import MazeScript from '../mazescript.js';
+import MazeScript from "engine/mazescript.js";
 export default class Spin extends MazeScript {
 	constructor(mazeObject) {
 		super(mazeObject);

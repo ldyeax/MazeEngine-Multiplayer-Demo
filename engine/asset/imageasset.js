@@ -1,29 +1,29 @@
-import tracedLighting from "../shaders/tracedlighting.js";
+import tracedLighting from "../shader/tracedlighting.js";
 import Asset from "../asset.js";
 import * as THREE from '../../three/Three.js';
 const textureLoader = new THREE.TextureLoader();
 
 export default class ImageAsset extends Asset {
-	constructor(mazeEngine, key, width, height, repeatX, repeatY) {
+	constructor(mazeEngine, key) {
 		super(mazeEngine, key);
 		let url = this.url = this.mazeEngine.imageAssets[key];
 		textureLoader.load(url, (texture) => {
 			this.texture = texture;
 
-			let geometry = new THREE.PlaneGeometry(width, height);
+			let geometry = new THREE.PlaneGeometry(1, 1);
 			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
 			texture.offset.x = 0;
 			texture.offset.y = 0;
 			// console.log("repeat x y : " + repeatX + ", " + repeatY + "")
-			texture.repeat.x = repeatX;
-			texture.repeat.y = repeatY;
+			texture.repeat.x = 1;
+			texture.repeat.y = 1;
 
 			texture.magFilter = THREE.NearestFilter;
 			texture.minFilter = THREE.NearestFilter;
 			texture.anisotropy = 0;
 
-			let material = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
+			let material = new THREE.MeshStandardMaterial({ map: texture });
 			material.side = THREE.DoubleSide;
 			// material.side = THREE.FrontSide;
 
@@ -44,8 +44,6 @@ export default class ImageAsset extends Asset {
 			// });
 
 			this.root = new THREE.Mesh(geometry, material);
-			this.root.rotation.x = this.root.rotation.y = this.root.rotation.z = 0;
-			this.root.position.x = this.root.position.y = this.root.position.z = 0;
 			this.root.receiveShadow = true;
 			this.root.castShadow = true;
 

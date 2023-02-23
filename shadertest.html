@@ -6,7 +6,8 @@
 <script type=importmap>
 {
 	"imports": {
-		"three": "./three/Three.js"
+		"three": "./three/Three.js",
+		"shader/": "./engine/shader/"
 	}
 }
 </script>
@@ -17,53 +18,9 @@
 
 <script type=module>
 import * as THREE from './three/Three.js';
-import tracedLighting from "./shaders/tracedlighting.js";
-
-const textureLoader = new THREE.TextureLoader();
-const wallUrl = "img/wall.png";
-let wallLoaded = false;
+import shaderTest from "./engine/test/shadertest.js";
 
 const scene = new THREE.Scene();
-
-textureLoader.load(wallUrl, (texture) => {
-    wallLoaded = true;
-
-    let geometry = new THREE.PlaneGeometry(100, 100);
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-
-    let material1 = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
-    let mesh1 = new THREE.Mesh(geometry, material1);
-    mesh1.position.set(-50, 0, -100);
-    scene.add(mesh1);
-
-    let material2 = new THREE.ShaderMaterial({
-        vertexShader: tracedLighting.vertex,
-        fragmentShader: tracedLighting.fragment,
-        uniforms: {
-            texture1: { value: texture },
-        },
-    });
-    let mesh2 = new THREE.Mesh(geometry, material2);
-    mesh2.position.set(50, 0, -100);
-    scene.add(mesh2);
-});
-
-function loadWall() {
-	return new Promise((resolve) => {
-		let interval = setInterval(() => {
-			if (wallLoaded) {
-				clearInterval(interval);
-				resolve();
-			}
-		}, 100);
-	});
-}
-
-await loadWall();
-
-const ambient = new THREE.AmbientLight(0xFFFFFF);
-ambient.intensity = 1;
-scene.add(ambient);
 
 const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById("canvas"),
@@ -77,5 +34,7 @@ function update() {
     requestAnimationFrame(update);
 }
 update();
+
+shaderTest(scene);
 
 </script>

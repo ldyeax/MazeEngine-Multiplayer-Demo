@@ -1,4 +1,4 @@
-import * as THREE from '../three/Three.js';
+import * as THREE from "three";
 
 export default class MazeObject {
 	static count = 0;

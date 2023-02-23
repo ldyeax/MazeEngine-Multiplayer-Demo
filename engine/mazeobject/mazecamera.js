@@ -1,32 +1,34 @@
-import * as THREE from '../../three/Three.js';
-import MazeObject from '../mazeobject.js';
+import * as THREE from "three";
+import MazeObject from "engine/mazeobject.js";
 
 export default class MazeCamera extends MazeObject {
-	constructor(mazeEngine) {
-		super(mazeEngine);
+	constructor(mazeEngine, args) {
+		super(mazeEngine, args);
 		let SIDE = mazeEngine.SIDE;
 
 		this.name = "Main Camera";
 
+		let fov = args.fov || 45;
+		let aspect = args.aspect || mazeEngine.canvasWidth / mazeEngine.canvasHeight;
+		let near = args.near || 0.1;
+		let far = args.far || 10000;
+		let position = args.position || new THREE.Vector3(0.5 * SIDE, 0.5 * SIDE, -0.5 * SIDE);
+		let rotation = args.rotation || new THREE.Vector3(0, 0, 0);
+
 		let camera = window.camera = mazeEngine.camera = 
-			new THREE.PerspectiveCamera(
-				45, 
-				mazeEngine.canvasWidth / mazeEngine.canvasHeight, 
-				0.1, 
-				10000
-			);
+			new THREE.PerspectiveCamera(fov, aspect, near, far);
 
-		camera.position.x = 0.5 * SIDE;
-		camera.position.y = 0.5 * SIDE;
-		camera.position.z = -0.5 * SIDE;
+		this.position = position;
+		this.rotation = rotation;
 
-		camera.rotation.x = 0;
-		camera.rotation.y = 0;
-		camera.rotation.z = 0;
+		camera.position.set(position.x, position.y, position.z);
+		camera.rotation.set(rotation.x, rotation.y, rotation.z);
 
 		this.root = camera;
 
 		this.scaleWithGlobalY = false;
+
+		mazeEngine.updateCanvasSize();
 	}
 
 	update() {

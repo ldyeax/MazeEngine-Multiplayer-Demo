@@ -1,21 +1,10 @@
-import misc from "./misc.js";
+import misc from "engine/misc.js";
+import ImageAsset from "asset/imageasset.js";
+import GLTFAsset from "asset/gltfasset.js";
 
-console.log("misc:");
-console.log(JSON.stringify(misc));
+import InputManager from "mazeobject/inputmanager.js";
 
-import ImageAsset from "./asset/imageasset.js";
-import GLTFAsset from "./asset/gltfasset.js";
-
-import Ceiling from "./mazeobject/ceiling.js";
-import Floor from "./mazeobject/floor.js";
-import Walls from "./mazeobject/walls.js";
-
-import Player from "./mazeobject/player.js";
-import MazeCamera from "./mazeobject/mazecamera.js";
-
-import MarbleTest from "./mazeobject/marbletest.js";
-
-import * as THREE from "../three/Three.js";
+import * as THREE from "three";
 
 const SIDE = 320;
 const N_SIDE = -SIDE;
@@ -32,7 +21,6 @@ const KEYSTATE_HELD = 2;
 const KEYSTATE_UP = 3;
 const KEYSTATE_NONE = 0;
 
-import generateMaze from "./generatemaze.js";
 
 let noclip = window.location.search.indexOf("noclip") != -1;
 
@@ -44,7 +32,7 @@ export default class MazeEngine {
 	cells = [];
 	player = null;
 
-	with = 8;
+	width = 8;
 	height = 8;
 
 	// #region misc function
@@ -73,8 +61,6 @@ export default class MazeEngine {
 	
 	// #region constructor
 	constructor() {
-		this.cells = generateMaze(this.with, this.height);
-
 		this.SIDE = SIDE;
 		this.INV_SIDE = INV_SIDE;
 		this.INV_SIDE_NEGATIVE = INV_SIDE_NEGATIVE;
@@ -137,28 +123,13 @@ export default class MazeEngine {
 	};
 
 	#initAssets() {
-		let floorAsset = window.floorAsset = new ImageAsset(
-			this,
-			'floor',
-			SIDE * this.with, SIDE * this.height,
-			this.with, this.height
-		);
+		let floorAsset = window.floorAsset = new ImageAsset(this, 'floor');
 		this.assets.push(floorAsset);
 	
-		let ceilingAsset = window.ceilingAsset = new ImageAsset(
-			this,
-			'ceiling',
-			SIDE * this.with, SIDE * this.height,
-			this.with * 2, this.height * 2
-		);
+		let ceilingAsset = window.ceilingAsset = new ImageAsset(this, 'ceiling');
 		this.assets.push(ceilingAsset);
 	
-		let wallAsset = window.wallAsset = new ImageAsset(
-			this,
-			'wall',
-			SIDE, SIDE,
-			1, 1
-		);
+		let wallAsset = window.wallAsset = new ImageAsset(this, 'wall');
 		this.assets.push(wallAsset);
 
 		for (let key of Object.keys(this.gltfAssets)) {
@@ -209,10 +180,14 @@ export default class MazeEngine {
 		let canvasWidth = 640;
 		let canvasHeight = parseInt(canvasWidth * window.innerHeight / window.innerWidth);
 	
-		this.renderer.setSize(canvasWidth, canvasHeight, false);
-	
-		this.camera.aspect = canvasWidth / canvasHeight;
-		this.camera.updateProjectionMatrix();
+		if (this.renderer) {
+			this.renderer.setSize(canvasWidth, canvasHeight, false);
+		}
+
+		if (this.camera) {
+			this.camera.aspect = canvasWidth / canvasHeight;
+			this.camera.updateProjectionMatrix();			
+		}
 	}
 	
 	// #endregion
@@ -253,7 +228,7 @@ export default class MazeEngine {
 			let root = mazeObject.root;
 
 			if (root && !mazeObject.addedToScene) {
-				console.log(`Adding to scene: ${mazeObject.name}`);
+				// console.log(`Adding to scene: ${mazeObject.name}`);
 				this.scene.add(root);
 				mazeObject.addedToScene = true;
 			}
@@ -290,16 +265,20 @@ export default class MazeEngine {
 		this.#updateGlobalYScale();
 		this.#checkForDestroyed();
 		this.#updateMazeObjects();
-		this.renderer.render(this.scene, this.camera);
 
-		requestAnimationFrame(this._update.bind(this));
+		if (this.renderer && this.scene && this.camera) {
+			this.renderer.render(this.scene, this.camera);		
+		}
+
+		requestAnimationFrame(this.#boundUpdate);
 	}
+	#boundUpdate = this._update.bind(this);
 	// #endregion
 
 	start(canvas) {
 		if (!this.assetsLoaded) {
 			console.log("assets not loaded");
-			this.loadAssets().then(this.start);
+			this.loadAssets().then(this.start.bind(this));
 			return;
 		}
 
@@ -318,32 +297,10 @@ export default class MazeEngine {
 		renderer.shadowMap.renderSingleSided = false;
 		renderer.shadowMap.renderReverseSided = false;
 
-		let pointLight = window.pointLight = new THREE.PointLight(0xFFFFFF);
-		pointLight.position.set(HALF_SIDE, HALF_SIDE, -HALF_SIDE);
-		pointLight.intensity = 1;
-		pointLight.castShadow = true;
-		pointLight.receiveShadow = true;
-		pointLight.shadow.camera.far = Infinity;
-		this.scene.add(pointLight);
-
-		// add scene light
-		let ambientLight = new THREE.AmbientLight(0xFFFFFF);
-		ambientLight.intensity = 1;
-		this.scene.add(ambientLight);
-
-		this.player = this.instantiate(Player);
-		this.cameraMazeObject = this.instantiate(MazeCamera);
-
-		this.instantiate(MarbleTest, {x:0, y:0});
-		this.instantiate(MarbleTest, {x:1, y:0});
-		this.instantiate(MarbleTest, {x:0, y:1});
-
 		window.addEventListener("resize", this.updateCanvasSize.bind(this));
 		this.updateCanvasSize();
 
-		this.instantiate(Ceiling);
-		this.instantiate(Walls);
-		this.instantiate(Floor);
+		this.instantiate(InputManager);
 
 		this._update();
 	}

@@ -4,7 +4,17 @@
 <script type=importmap>
 {
 	"imports": {
-		"three": "./three/Three.js"
+		"three": "./three/Three.js",
+		"three_examples/": "./three_examples/",
+
+		"assets/": "./assets/",
+
+		"engine/": "./engine/",
+		"asset/": "./engine/asset/",
+		"mazeobject/": "./engine/mazeobject/",
+		"mazescript/": "./engine/mazescript/",
+		"shader/": "./engine/shader/",
+		"test/": "./engine/test/"
 	}
 }
 </script>
@@ -40,9 +50,13 @@ canvas {
 
 <script type=module>
 import mazeEngine from './engine/mazeengine.js';
+import Scene from "./scene/test1.js";
+import * as THREE from './three/Three.js';
+window.THREE = THREE;
 
 let maze = new mazeEngine();
 await maze.loadAssets();
 maze.start(document.getElementById("canvas"));
+maze.instantiate(Scene);
 
 </script>
