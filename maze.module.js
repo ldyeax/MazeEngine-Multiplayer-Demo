@@ -7,11 +7,11 @@ const shaders = {
 	tracedLighting: _tracedLighting,
 }
 
-console.log("========");
-console.log(shaders.tracedLighting.vertex);
-console.log("========");
-console.log(shaders.tracedLighting.fragment);
-console.log("========");
+// console.log("========");
+// console.log(shaders.tracedLighting.vertex);
+// console.log("========");
+// console.log(shaders.tracedLighting.fragment);
+// console.log("========");
 
 // #endregion
 
@@ -71,6 +71,7 @@ window.addEventListener("keyup", function (e) {
 // #region Utiliy constants
 const gltfLoader = new GLTFLoader();
 const textureLoader = new THREE.TextureLoader();
+const title = document.querySelector("title");
 // #endregion
 // #region engine constants
 const SIDE = 320;
@@ -93,6 +94,15 @@ let scene = null;
 
 let width = 6;
 let height = 6;
+
+const lightMap = [];
+for (let y = 0; y < height; y++) {
+	let row = [];
+	for (let x = 0; x < height; x++) {
+		row.push(1);
+	}
+	lightMap.push(row);
+}
 
 let wallAsset = null;
 
@@ -547,8 +557,11 @@ class ImageAsset extends Asset {
 			let material = new THREE.ShaderMaterial({
 				uniforms: {
 					texture1: {
-						value: texture
+						value: texture,
 					},
+					repeat: {
+						value: new THREE.Vector2(repeatX, repeatY),
+					}
 				},
 				vertexShader: shaders.tracedLighting.vertex,
 				fragmentShader: shaders.tracedLighting.fragment
@@ -707,6 +720,51 @@ class Player extends MazeObject {
 	// 	}
 	// }
 
+	static #CELL_UP = 0;
+	static #CELL_DOWN = 1;
+	static #CELL_LEFT = 2;
+	static #CELL_RIGHT = 3;
+	static #CELL_START = 4;
+
+	updateLightMap() {
+		let gridPos = this.getGridPosition();
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				lightMap[y][x] = 0;
+			}
+		}
+		let subtraction = 1.0/8.0;
+		let recurse = function(x, y, value, bend, lastDirection) {
+			if (lastDirection != Player.#CELL_START) {
+				value -= subtraction;
+				if (bend) {
+					value *= 0.5;
+				}
+
+				if (value < 0) {
+					return;
+				}
+			}
+			
+			lightMap[y][x] = Math.max(lightMap[y][x], );
+			let cell = cells[y][x];
+
+			if (lastDirection != Player.#CELL_DOWN && !cell.up) {
+				recurse(x, y + 1, value, lastDirection == Player.#CELL_UP, Player.#CELL_UP);
+			}
+			if (lastDirection != Player.#CELL_UP && !cell.down) {
+				recurse(x, y - 1, value, lastDirection == Player.#CELL_DOWN, Player.#CELL_DOWN);
+			}
+			if (lastDirection != Player.#CELL_RIGHT && !cell.left) {
+				recurse(x - 1, y, value, lastDirection == Player.#CELL_LEFT, Player.#CELL_LEFT);
+			}
+			if (lastDirection != Player.#CELL_LEFT && !cell.right) {
+				recurse(x + 1, y, value, lastDirection == Player.#CELL_RIGHT, Player.#CELL_RIGHT);
+			}
+		}
+		recurse(gridPos.x, gridPos.y, 1.0, false, Player.#CELL_START);
+	}
+
 	update() {
 		super.update();
 
@@ -732,14 +790,7 @@ class Player extends MazeObject {
 		camera.position.set(this.position.x, SIDE * 0.5, this.position.z);
 		camera.rotation.set(0, this.rotation.y, 0);
 
-		// switch (this.state) {
-		// 	case Player.STATE.WAITING_FOR_GAME_START:
-		// 		break;
-		// 	case Player.STATE.IDLE:
-
-		// 		break;
-
-		// }
+		this.updateLightMap();
 	}
 }
 
@@ -769,17 +820,21 @@ class MazeManager extends MazeObject {
 			wallMesh.position.y = 0;
 			wallMesh.scale.y = 0;
 
+			let cell = cells[y][x];
+
 			// left
 			if (d == ADDWALL_LEFT) {
 				wallMesh.position.x = x * SIDE;
 				wallMesh.position.z = -y * SIDE - SIDE * 0.5;
 				wallMesh.rotation.y = Math.PI * 0.5;
+				cell.left = wallMesh;
 			}
 			//right
 			else if (d == ADDWALL_RIGHT) {
 				wallMesh.position.x = x * SIDE + SIDE;
 				wallMesh.position.z = -y * SIDE + SIDE * -0.5;
 				wallMesh.rotation.y = Math.PI * -0.5;
+				cell.right = wallMesh;
 			}
 			// up
 			else if (d == ADDWALL_UP) {
@@ -788,7 +843,7 @@ class MazeManager extends MazeObject {
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
 				wallMesh.position.z = -y * SIDE - SIDE;
 				wallMesh.rotation.y = 0;
-
+				cell.up = wallMesh;
 				//wallMesh.scale.x = wallMesh.scale.y = wallMesh.scale.z = 0;
 			}
 			// down
@@ -798,6 +853,7 @@ class MazeManager extends MazeObject {
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
 				wallMesh.position.z = -y * SIDE;
 				wallMesh.rotation.y = Math.PI;
+				cell.down = wallMesh;
 			}
 
 			scene.add(wallMesh);
@@ -1121,6 +1177,7 @@ async function _maze(canvas) {
 		Time.time = Date.now() * inv1000;
 		Time.deltaTime = Time.time - lastUpdateTime;
 		lastUpdateTime = Time.time;
+		title.innerText = `FPS: ${Math.round(1 / Time.deltaTime)}`;
 		// #endregion
 
 		// #region player collision
@@ -1159,7 +1216,7 @@ async function _maze(canvas) {
 		// #region update mazeObjects
 		for (let mazeObject of mazeObjects) {
 			if (mazeObject.root && !mazeObject.addedToScene) {
-				console.log(`Adding to scene: ${mazeObject.name}`);
+				// console.log(`Adding to scene: ${mazeObject.name}`);
 				scene.add(mazeObject.root);
 				mazeObject.addedToScene = true;
 			}
