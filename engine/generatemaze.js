@@ -1,23 +1,8 @@
+import Cell from "engine/cell.js";
 
-class Cell {
-	up = true;
-	left = true;
-	right = true;
-	down = true;
-	x = 0;
-	y = 0;
-	constructor(x = 0, y = 0, up = true, left = true, right = true, down = true) {
-		this.x = x;
-		this.y = y;
-		this.up = up;
-		this.left = left;
-		this.right = right;
-		this.down = down;
-	}
-	secluded() {
-		return (this.up && this.left && this.right && this.down);
-	}
-};
+/**
+ * @typedef {import("engine/cell.js").default} Cell
+ */
 
 function mazeAsciiArt(cells) {
 	let ret = "";
@@ -58,6 +43,11 @@ function mazeAsciiArt(cells) {
 	return ret;
 }
 
+/**
+ * @param {number} width 
+ * @param {number} height 
+ * @returns {Cell[][]}
+ */
 export default function generateMaze(width, height) {
 	width = parseInt(Math.abs(width));
 	height = parseInt(Math.abs(height));

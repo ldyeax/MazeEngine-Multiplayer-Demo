@@ -5,8 +5,8 @@ import Maze from "mazeobject/maze.js";
 import Player from "mazeobject/player.js";
 import MazeCamera from "mazeobject/mazecamera.js";
 import MarbleTest from "mazeobject/marbletest.js";
-
-import shaderTest from "test/shadertest.js";
+import CellLightManager from "engine/mazeobject/celllightmanager.js";
+import CellLighter from "engine/mazescript/celllighter.js";
 
 export default class TestScene1 extends MazeObject {
 	constructor(mazeEngine, args) {
@@ -34,8 +34,11 @@ export default class TestScene1 extends MazeObject {
 		ambientLight.intensity = 1;
 		scene.add(ambientLight);
 
+		mazeEngine.instantiate(CellLightManager);
+
 		mazeEngine.cameraMazeObject = this.cameraMazeObject = mazeEngine.instantiate(MazeCamera);
-		mazeEngine.player = this.player = mazeEngine.instantiate(Player);
+		let player = mazeEngine.player = this.player = mazeEngine.instantiate(Player);
+		player.addScript(CellLighter);
 		
 		mazeEngine.instantiate(MarbleTest, {x:0, y:0});
 		mazeEngine.instantiate(MarbleTest, {x:1, y:0});

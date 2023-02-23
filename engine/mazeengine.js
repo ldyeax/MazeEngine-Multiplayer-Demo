@@ -24,18 +24,50 @@ const KEYSTATE_NONE = 0;
 
 let noclip = window.location.search.indexOf("noclip") != -1;
 
+/**
+ * @typedef import("engine/mazeobject.js").default MazeObject
+ * @typedef import("engine/mazescript.js").default MazeScript
+ * @typedef import("engine/cell.js").default Cell
+ * @typedef import("mazeobject/player.js").default Player
+ */
 export default class MazeEngine {
+	/**
+	 * @type {number}
+	 */
 	SIDE = 0;
+	/**
+	 * @type {number}
+	 */
 	INV_SIDE = 0;
+	/**
+	 * @type {number}
+	 */
 	INV_SIDE_NEGATIVE = 0;
 
+	/**
+	 * @type {Cell[]}
+	 */
 	cells = [];
-	player = null;
 
+	/**
+	 * @type {Player}
+	 */
+	player = null;
+	/**
+	 * @type {number}
+	 */
 	width = 8;
+	/**
+	 * @type {number}
+	 */
 	height = 8;
 
 	// #region misc function
+	/**
+	 * @param {THREE.Vector2|number} vector2_x 
+	 * @param {number} y 
+	 * @returns {THREE.Vector2}
+	 */
 	gridToWorld(vector2_x, y) {
 		if (typeof y == 'number') {
 			let x = vector2_x;
@@ -47,7 +79,13 @@ export default class MazeEngine {
 	// #endregion
 
 	// #region Time
+	/**
+	 * @type {number}
+	 */
 	#lastUpdateTime = 0;
+	/**
+	 * @type {number}
+	 */
 	deltaTime = 0;
 	
 	#updateTime() {
@@ -71,6 +109,9 @@ export default class MazeEngine {
 	// #endregion
 
 	// #region globalYScale
+	/**
+	 * @type {number}
+	 */
 	globalYScale = 0;
 	#updateGlobalYScale() {
 		this.globalYScale += this.deltaTime;
@@ -81,14 +122,24 @@ export default class MazeEngine {
 	// #endregion
 
 	// #region assets
+	/**
+	 * @type {boolean}
+	 */
 	assetsLoaded = false;
-
+	/**
+	 * @type {ImageAsset[]}
+	 */
 	assets = [];
-
+	/**
+	 * @type {Object.<string, GLTFAsset>}
+	 */
 	gltfAssets = {
 		N64: "assets/n64/scene.gltf",
 		marbletest: "assets/marbletest.gltf",
 	};
+	/**
+	 * @type {Object.<string, THREE.Mesh>}
+	 */
 	imageAssets = {
 		ceiling: "assets/img/ceiling.png",
 		floor: "assets/img/floor.png",
@@ -172,8 +223,17 @@ export default class MazeEngine {
 	// #endregion
 
 	// #region three
+	/**
+	 * @type {THREE.Scene}
+	 */
 	scene = null;
+	/**
+	 * @type {THREE.PerspectiveCamera}
+	 */
 	camera = null;
+	/**
+	 * @type {THREE.WebGLRenderer}
+	 */
 	renderer = null;
 
 	updateCanvasSize() {
@@ -193,19 +253,32 @@ export default class MazeEngine {
 	// #endregion
 
 	// #region keystates
+	/**
+	 * @type {Object.<string, number>}
+	 */
 	static KEY_ACTIONS = {
 		FORWARD: 1,
 		BACKWARD: 2,
 		LEFT: 3,
 		RIGHT: 4,
 	};
+	/**
+	 * @type {Object.<string, number>}
+	 */
 	keyStates = {};
+	/**
+	 * @param {string} action 
+	 * @returns {boolean}
+	 */
 	isDown(action) {
 		return this.keyStates[action] == KEYSTATE_DOWN || this.keyStates[action] == KEYSTATE_HELD;
 	}
 	// #endregion
 
 	// #region mazeObjects
+	/**
+	 * @type {MazeObject[]}
+	 */
 	#mazeObjects = [];
 	#checkForDestroyed() {
 		let foundDestroyed = false;
@@ -232,10 +305,26 @@ export default class MazeEngine {
 				this.scene.add(root);
 				mazeObject.addedToScene = true;
 			}
+		}
 
+		for (let mazeObject of this.#mazeObjects) {
+			mazeObject.preUpdate();
+		}
+
+		for (let mazeObject of this.#mazeObjects) {
+			mazeObject.preUpdateScripts();
+		}
+		
+		for (let mazeObject of this.#mazeObjects) {
 			mazeObject.update();
+		}
+
+		for (let mazeObject of this.#mazeObjects) {
 			mazeObject.updateScripts();
-			
+		}
+
+		for (let mazeObject of this.#mazeObjects) {
+			let root = mazeObject.root;
 			if (root) {
 				let position = mazeObject.position;
 				let rotation = mazeObject.rotation;
@@ -249,6 +338,13 @@ export default class MazeEngine {
 				}
 				root.scale.set(scale.x, scale.y, scale.z);
 			}
+		}
+
+		for (let mazeObject of this.#mazeObjects) {
+			mazeObject.lateUpdate();
+		}
+		for (let mazeObject of this.#mazeObjects) {
+			mazeObject.lateUpdateScripts();
 		}
 	}
 	instantiate(mazeObjectClass, args={}) {
@@ -272,6 +368,9 @@ export default class MazeEngine {
 
 		requestAnimationFrame(this.#boundUpdate);
 	}
+	/**
+	 * @type {function}
+	 */
 	#boundUpdate = this._update.bind(this);
 	// #endregion
 

@@ -23,25 +23,25 @@ export default class ImageAsset extends Asset {
 			texture.minFilter = THREE.NearestFilter;
 			texture.anisotropy = 0;
 
-			let material = new THREE.MeshStandardMaterial({ map: texture });
-			material.side = THREE.DoubleSide;
+			// let material = new THREE.MeshStandardMaterial({ map: texture });
+			// material.side = THREE.DoubleSide;
 			// material.side = THREE.FrontSide;
 
-			// let material = new THREE.ShaderMaterial({
-			// 	uniforms: {
-			// 		texture1: {
-			// 			value: texture,
-			// 		},
-			// 		repeat: {
-			// 			value: new THREE.Vector2(repeatX, repeatY),
-			// 		},
-			// 		lightMapValue: {
-			// 			value: 1.0,
-			// 		}
-			// 	},
-			// 	vertexShader: tracedLighting.vertex,
-			// 	fragmentShader: tracedLighting.fragment
-			// });
+			let material = new THREE.ShaderMaterial({
+				uniforms: {
+					texture1: {
+						value: texture,
+					},
+					repeat: {
+						value: new THREE.Vector2(1, 1),
+					},
+					lightMapValue: {
+						value: 1.0,
+					}
+				},
+				vertexShader: tracedLighting.vertex,
+				fragmentShader: tracedLighting.fragment
+			});
 
 			this.root = new THREE.Mesh(geometry, material);
 			this.root.receiveShadow = true;

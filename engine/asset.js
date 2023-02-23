@@ -1,7 +1,19 @@
 export default class Asset {
+	/**
+	 * @type {boolean}
+	 */
 	loaded = false;
+	/**
+	 * @type {THREE.Object3D}
+	 */
 	root = null;
+	/**
+	 * @type {MazeEngine}
+	 */
 	mazeEngine = null;
+	/**
+	 * @type {string}
+	 */
 	key = "";
 
 	constructor(mazeEngine, key) {

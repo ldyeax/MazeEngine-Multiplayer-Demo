@@ -15,9 +15,9 @@ export default class Floor extends MazeObject {
 		
 		this.root = mazeEngine.imageAssets.floor.clone();
 
-		this.root.material.map.wrapS = THREE.RepeatWrapping;
-		this.root.material.map.wrapT = THREE.RepeatWrapping;
-		this.root.material.map.repeat.set(width, height);
+		// this.root.material.map.wrapS = THREE.RepeatWrapping;
+		// this.root.material.map.wrapT = THREE.RepeatWrapping;
+		// this.root.material.map.repeat.set(width, height);
 
 		this.rotation.x = -Math.PI * 0.5;	
 

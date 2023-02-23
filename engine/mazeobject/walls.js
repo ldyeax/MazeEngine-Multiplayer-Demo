@@ -7,10 +7,15 @@ const ADDWALL_UP = 2;
 const ADDWALL_DOWN = 3;
 
 export default class Walls extends MazeObject {
+	/**
+	 * @type {THREE.Mesh[]}
+	 */
 	wallMeshes = [];
 
 	constructor(mazeEngine) {
 		super(mazeEngine);
+
+		window.wallMeshes = this.wallMeshes;
 
 		this.name = "Walls";
 
@@ -25,6 +30,7 @@ export default class Walls extends MazeObject {
 			// if (d != ADDWALL_UP) return;
 
 			let wallMesh = mazeEngine.imageAssets.wall.clone();
+			wallMesh.material = wallMesh.material.clone();
 			walls.wallMeshes.push(wallMesh);
 
 			wallMesh.position.y = 0;
@@ -32,6 +38,8 @@ export default class Walls extends MazeObject {
 
 			let cell = cells[y][x];
 			wallMesh.userData.cell = cell;
+			wallMesh.userData.cellX = x;
+			wallMesh.userData.cellY = y;
 
 			wallMesh.scale.set(SIDE, SIDE, 1);
 
@@ -92,13 +100,13 @@ export default class Walls extends MazeObject {
 			}
 		}
 	}
-	update() {
+	lateUpdate() {
 		this.position.y = this.mazeEngine.SIDE * 0.5 * this.mazeEngine.globalYScale;
 
-		//console.log("====");
+		//console.log("====" + this.wallMeshes.length);
 		for (let wallMesh of this.wallMeshes) {
-			let cell = wallMesh.userData.cell;
-			//wallMesh.material.uniforms.lightMapValue.value = cell.lightMapValue;
+			let cell = this.mazeEngine.cells[wallMesh.userData.cellY][wallMesh.userData.cellX];
+			wallMesh.material.uniforms.lightMapValue.value = cell.lightMapValue;
 			//console.log(cell.lightMapValue);
 		}
 	}

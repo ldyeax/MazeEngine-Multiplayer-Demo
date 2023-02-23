@@ -55,53 +55,6 @@ export default class Player extends MazeObject {
 		this.scaleWithGlobalY = false;
 	}
 
-	static #CELL_UP = 0;
-	static #CELL_DOWN = 1;
-	static #CELL_LEFT = 2;
-	static #CELL_RIGHT = 3;
-	static #CELL_START = 4;
-
-	updateLightMap() {
-		let mazeEngine = this.mazeEngine;
-
-		let gridPos = this.getGridPosition();
-		for (let y = 0; y < mazeEngine.height; y++) {
-			for (let x = 0; x < mazeEngine.width; x++) {
-				mazeEngine.cells[y][x].lightMapValue = 0.1;
-			}
-		}
-		let subtraction = 1.0/8.0;
-		let recurse = function(x, y, value, bend, lastDirection) {
-			if (lastDirection != Player.#CELL_START) {
-				value -= subtraction;
-				if (bend) {
-					value *= 0.5;
-				}
-
-				if (value < 0) {
-					return;
-				}
-			}
-
-			let cell = mazeEngine.cells[y][x];
-			cell.lightMapValue = Math.max(cell.lightMapValue, value);
-
-			if (lastDirection != Player.#CELL_DOWN && !cell.up) {
-				recurse(x, y + 1, value, lastDirection == Player.#CELL_UP, Player.#CELL_UP);
-			}
-			if (lastDirection != Player.#CELL_UP && !cell.down) {
-				recurse(x, y - 1, value, lastDirection == Player.#CELL_DOWN, Player.#CELL_DOWN);
-			}
-			if (lastDirection != Player.#CELL_RIGHT && !cell.left) {
-				recurse(x - 1, y, value, lastDirection == Player.#CELL_LEFT, Player.#CELL_LEFT);
-			}
-			if (lastDirection != Player.#CELL_LEFT && !cell.right) {
-				recurse(x + 1, y, value, lastDirection == Player.#CELL_RIGHT, Player.#CELL_RIGHT);
-			}
-		}
-		recurse(gridPos.x, gridPos.y, 1.0, false, Player.#CELL_START);
-	}
-
 	update() {
 		super.update();
 
@@ -131,7 +84,5 @@ export default class Player extends MazeObject {
 		let camera = mazeEngine.cameraMazeObject;
 		camera.position.set(this.position.x, this.mazeEngine.SIDE * 0.5, this.position.z);
 		camera.rotation.set(0, this.rotation.y, 0);
-
-		this.updateLightMap();
 	}
 }

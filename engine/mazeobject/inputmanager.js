@@ -10,7 +10,7 @@ const KEY_ACTIONS = {
 	BACKWARD: 2,
 	LEFT: 3,
 	RIGHT: 4,
-}
+};
 
 const keyMap = {};
 keyMap[KEY_ACTIONS.FORWARD] = "KeyW";
@@ -140,4 +140,4 @@ export default class InputManager extends MazeObject {
 		}
 		this.lastKeyStates = Object.assign({}, keyStates);
 	}
-}
+};	
