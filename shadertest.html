@@ -15,13 +15,15 @@
 
 <canvas width=640 height=480 id=canvas></canvas>
 
-<script>
+<script type=module>
 import * as THREE from './three/Three.js';
-import _tracedLighting from "./shaders/tracedlighting.js";
+import tracedLighting from "./shaders/tracedlighting.js";
 
 const textureLoader = new THREE.TextureLoader();
 const wallUrl = "img/wall.png";
-const wallLoaded = false;
+let wallLoaded = false;
+
+const scene = new THREE.Scene();
 
 textureLoader.load(wallUrl, (texture) => {
     wallLoaded = true;
@@ -29,19 +31,28 @@ textureLoader.load(wallUrl, (texture) => {
     let geometry = new THREE.PlaneGeometry(100, 100);
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
-    let material = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
+    let material1 = new THREE.MeshStandardMaterial({ map: texture, shininess: 0 });
+    let mesh1 = new THREE.Mesh(geometry, material1);
+    mesh1.position.set(-50, 0, -100);
+    scene.add(mesh1);
 
-    window.wallMesh = new THREE.Mesh(geometry, material);
-    wallMesh.position.set(0, 0, -100);
+    let material2 = new THREE.ShaderMaterial({
+        vertexShader: tracedLighting.vertex,
+        fragmentShader: tracedLighting.fragment,
+        uniforms: {
+            texUnit: { value: texture },
+        },
+    });
+    let mesh2 = new THREE.Mesh(geometry, material2);
+    mesh2.position.set(50, 0, -100);
+    scene.add(mesh2);
 });
 
 function loadWall() {
 	return new Promise((resolve) => {
 		let interval = setInterval(() => {
-			
-			if (allLoaded) {
+			if (wallLoaded) {
 				clearInterval(interval);
-				// console.log("Resolving");
 				resolve();
 			}
 		}, 100);
@@ -50,21 +61,21 @@ function loadWall() {
 
 await loadWall();
 
-const scene = new THREE.Scene();
-
 const ambient = new THREE.AmbientLight(0xFFFFFF);
-ambient.intensity = 0;
+ambient.intensity = 1;
 scene.add(ambient);
-
-scene.add(wallMesh);
 
 const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById("canvas"),
 });
 
+const camera = new THREE.PerspectiveCamera(75, 640 / 480, 0.1, 1000);
+scene.add(camera);
+
 function update() {
     renderer.render(scene, camera);
     requestAnimationFrame(update);
 }
+update();
 
 </script>
