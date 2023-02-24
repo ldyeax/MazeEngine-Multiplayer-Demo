@@ -6,7 +6,7 @@ const CELL_LEFT = 2;
 const CELL_RIGHT = 3;
 const CELL_START = 4;
 
-export default class CellLighter extends MazeScript {
+export default class CellLightSource extends MazeScript {
 	// /**
 	//  * @type {string}
 	//  */
@@ -17,7 +17,7 @@ export default class CellLighter extends MazeScript {
 
 		let gridPos = this.mazeObject.getGridPosition();
 
-		let subtraction = 1.0/8.0;
+		let subtraction = 1.0/6.0;
 		let recurse = function(x, y, value, bend, lastDirection) {
 			if (lastDirection != CELL_START) {
 				value -= subtraction;

@@ -1,30 +1,42 @@
 import MazeObject from "engine/mazeobject.js";
 import * as THREE from "three";
 
+import CellLightReceiver from "mazescript/celllightreceiver.js";
+
 export default class Ceiling extends MazeObject {
 	constructor(mazeEngine) {
 		super(mazeEngine);
 
 		let SIDE = mazeEngine.SIDE;
+		let HALF_SIDE = mazeEngine.HALF_SIDE;
+
 		let height = mazeEngine.height;
 		let width = mazeEngine.width;
 
 		this.name = "Ceiling";
+		this.root = new THREE.Group();
 
-		this.root = mazeEngine.imageAssets.ceiling.clone();
+		// #region ceiling cell generation
+		let ceilingAsset = mazeEngine.imageAssets.ceiling;
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				let ceilingCell = ceilingAsset.clone();
+				ceilingCell.material = ceilingCell.material.clone();
 
-		// this.root.material.map.wrapS = THREE.RepeatWrapping;
-		// this.root.material.map.wrapT = THREE.RepeatWrapping;
-		// this.root.material.map.repeat.set(width, height);
-		
-		this.rotation.x = Math.PI * 0.5;
-		
-		this.position.y = SIDE;
-		this.position.z = -SIDE * height * 0.5;
-		this.position.x = SIDE * width * 0.5;
+				ceilingCell.userData.cell = mazeEngine.cells[y][x];
 
-		this.scale.set(width * SIDE, height * SIDE, 1);
+				ceilingCell.position.x = x * SIDE + HALF_SIDE;
+				ceilingCell.position.z = -y * SIDE - HALF_SIDE;
+				ceilingCell.position.y = SIDE;
 
-		this.scaleWithGlobalY = false;
+				ceilingCell.rotation.x = Math.PI * 0.5;
+
+				ceilingCell.scale.set(SIDE, SIDE, 1);
+				this.root.add(ceilingCell);
+			}
+		}
+		// #endregion
+
+		this.cellLightReceiver = this.addScript(CellLightReceiver);
 	}
 }

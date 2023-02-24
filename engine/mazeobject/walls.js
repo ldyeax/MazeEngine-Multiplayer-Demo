@@ -1,6 +1,8 @@
 import MazeObject from "engine/mazeobject.js";
 import * as THREE from "three";
 
+import CellLightReceiver from "mazescript/celllightreceiver.js";
+
 const ADDWALL_LEFT = 0;
 const ADDWALL_RIGHT = 1;
 const ADDWALL_UP = 2;
@@ -14,16 +16,17 @@ export default class Walls extends MazeObject {
 
 	constructor(mazeEngine) {
 		super(mazeEngine);
+		let SIDE = mazeEngine.SIDE;
 
 		window.wallMeshes = this.wallMeshes;
 
 		this.name = "Walls";
 
-		let cells = mazeEngine.cells;
-		let SIDE = mazeEngine.SIDE;
-
 		this.root = new THREE.Group();
 
+		// #region wall generation
+
+		let cells = mazeEngine.cells;
 		let walls = this;
 
 		function addWall(d, x, y) {
@@ -38,8 +41,6 @@ export default class Walls extends MazeObject {
 
 			let cell = cells[y][x];
 			wallMesh.userData.cell = cell;
-			wallMesh.userData.cellX = x;
-			wallMesh.userData.cellY = y;
 
 			wallMesh.scale.set(SIDE, SIDE, 1);
 
@@ -99,15 +100,12 @@ export default class Walls extends MazeObject {
 				}
 			}
 		}
+
+		// #endregion
+
+		this.cellLightReceiver = this.addScript(CellLightReceiver);
 	}
 	lateUpdate() {
 		this.position.y = this.mazeEngine.SIDE * 0.5 * this.mazeEngine.globalYScale;
-
-		//console.log("====" + this.wallMeshes.length);
-		for (let wallMesh of this.wallMeshes) {
-			let cell = this.mazeEngine.cells[wallMesh.userData.cellY][wallMesh.userData.cellX];
-			wallMesh.material.uniforms.lightMapValue.value = cell.lightMapValue;
-			//console.log(cell.lightMapValue);
-		}
 	}
 }

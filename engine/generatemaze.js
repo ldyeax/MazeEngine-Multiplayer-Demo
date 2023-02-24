@@ -60,7 +60,7 @@ export default function generateMaze(width, height) {
 	let ret = [];
 
 	if (width * height == 1) {
-		ret.push(new Cell(0, 0));
+		ret.push([new Cell(0, 0)]);
 	} else if (width == 1) {
 		for (let y = 0; y < height; y++) {
 			ret.push([

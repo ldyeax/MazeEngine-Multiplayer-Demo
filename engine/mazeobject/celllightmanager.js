@@ -9,7 +9,9 @@ export default class CellLightManager extends MazeObject {
 		super.preUpdate();
 		
 		let mazeEngine = this.mazeEngine;
-
+		if (!mazeEngine.cells || mazeEngine.cells.length === 0) {
+			return;
+		}
 		for (let y = 0; y < mazeEngine.height; y++) {
 			for (let x = 0; x < mazeEngine.width; x++) {
 				mazeEngine.cells[y][x].lightMapValue = 0;

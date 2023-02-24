@@ -38,6 +38,10 @@ export default class MazeEngine {
 	/**
 	 * @type {number}
 	 */
+	HALF_SIDE = 0;
+	/**
+	 * @type {number}
+	 */
 	INV_SIDE = 0;
 	/**
 	 * @type {number}
@@ -100,6 +104,7 @@ export default class MazeEngine {
 	// #region constructor
 	constructor() {
 		this.SIDE = SIDE;
+		this.HALF_SIDE = HALF_SIDE;
 		this.INV_SIDE = INV_SIDE;
 		this.INV_SIDE_NEGATIVE = INV_SIDE_NEGATIVE;
 
