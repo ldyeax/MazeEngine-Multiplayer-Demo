@@ -22,6 +22,11 @@ uniform float topRightLighting;
 uniform float bottomLeftLighting;
 uniform float bottomRightLighting;
 
+// float topLeftLighting = 1.0;
+// float topRightLighting = 0.0;
+// float bottomLeftLighting = 0.0;
+// float bottomRightLighting = 0.0;
+
 void main() {
 	float x = vUv.x;
 	float y = 1.0 - vUv.y;

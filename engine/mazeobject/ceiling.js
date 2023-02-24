@@ -17,11 +17,9 @@ export default class Ceiling extends MazeObject {
 		this.root = new THREE.Group();
 
 		// #region ceiling cell generation
-		let ceilingAsset = mazeEngine.imageAssets.ceiling;
 		for (let y = 0; y < height; y++) {
 			for (let x = 0; x < width; x++) {
-				let ceilingCell = ceilingAsset.clone();
-				ceilingCell.material = ceilingCell.material.clone();
+				let ceilingCell = mazeEngine.imageAssets.ceiling.getRoot();;
 
 				ceilingCell.userData.cell = mazeEngine.cells[y][x];
 
@@ -32,6 +30,15 @@ export default class Ceiling extends MazeObject {
 				ceilingCell.rotation.x = Math.PI * 0.5;
 
 				ceilingCell.scale.set(SIDE, SIDE, 1);
+
+				let userData = ceilingCell.material.userData;
+				let uniforms = ceilingCell.material.uniforms;
+
+				userData.topLeftUniformReference = uniforms.bottomLeftLighting;
+				userData.topRightUniformReference = uniforms.bottomRightLighting;
+				userData.bottomLeftUniformReference = uniforms.topLeftLighting;
+				userData.bottomRightUniformReference = uniforms.topRightLighting;
+
 				this.root.add(ceilingCell);
 			}
 		}

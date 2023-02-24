@@ -6,6 +6,14 @@ const CELL_LEFT = 2;
 const CELL_RIGHT = 3;
 const CELL_START = 4;
 
+/**
+ * @typedef {import("engine/cell.js").default} Cell
+ * @typedef {import("engine/mazeengine.js").default} MazeEngine
+ * @typedef {import("engine/mazeobject.js").default} MazeObject
+ * @typedef {import("engine/mazescript.js").default} MazeScript
+ * 
+ * @summary Traverses the maze and adds to the lightMapValue of each cell based on distance from the mazeObject.
+ */
 export default class CellLightSource extends MazeScript {
 	// /**
 	//  * @type {string}

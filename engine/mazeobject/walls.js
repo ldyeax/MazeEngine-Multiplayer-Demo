@@ -32,8 +32,8 @@ export default class Walls extends MazeObject {
 		function addWall(d, x, y) {
 			// if (d != ADDWALL_UP) return;
 
-			let wallMesh = mazeEngine.imageAssets.wall.clone();
-			wallMesh.material = wallMesh.material.clone();
+			let wallMesh = mazeEngine.imageAssets.wall.getRoot();
+			
 			walls.wallMeshes.push(wallMesh);
 
 			wallMesh.position.y = 0;
@@ -44,38 +44,59 @@ export default class Walls extends MazeObject {
 
 			wallMesh.scale.set(SIDE, SIDE, 1);
 
+			let userData = wallMesh.material.userData;
+			let uniforms = wallMesh.material.uniforms;
+
 			// left
 			if (d == ADDWALL_LEFT) {
 				wallMesh.position.x = x * SIDE;
 				wallMesh.position.z = -y * SIDE - SIDE * 0.5;
 				wallMesh.rotation.y = Math.PI * 0.5;
-				cell.left = wallMesh;
+
+				userData.bottomLeftUniformReference = [uniforms.topLeftLighting, uniforms.bottomLeftLighting];
+				userData.topLeftUniformReference = [uniforms.topRightLighting, uniforms.bottomRightLighting];
+				userData.topRightUniformReference = null;
+				userData.bottomRightUniformReference = null;
 			}
 			//right
 			else if (d == ADDWALL_RIGHT) {
 				wallMesh.position.x = x * SIDE + SIDE;
 				wallMesh.position.z = -y * SIDE + SIDE * -0.5;
 				wallMesh.rotation.y = Math.PI * -0.5;
-				cell.right = wallMesh;
+
+				// userData.bottomRightUniformReference = [uniforms.topLeftLighting, uniforms.bottomLeftLighting];
+				// userData.topRightUniformReference = [uniforms.topRightLighting, uniforms.bottomRightLighting];
+				// userData.topRightUniformReference = null;
+				// userData.bottomRightUniformReference = null;
+
+				userData.bottomRightUniformReference = [uniforms.topRightLighting, uniforms.bottomRightLighting];
+				userData.topRightUniformReference = [uniforms.topLeftLighting, uniforms.bottomLeftLighting];
+				userData.topLeftUniformReference = null;
+				userData.bottomLeftUniformReference = null;
 			}
 			// up
 			else if (d == ADDWALL_UP) {
 				// console.log(`making up at ${x}, ${y}`);
-
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
 				wallMesh.position.z = -y * SIDE - SIDE;
 				wallMesh.rotation.y = 0;
-				cell.up = wallMesh;
-				//wallMesh.scale.x = wallMesh.scale.y = wallMesh.scale.z = 0;
+
+				userData.topLeftUniformReference = [uniforms.topLeftLighting, uniforms.bottomLeftLighting];
+				userData.topRightUniformReference = [uniforms.topRightLighting, uniforms.bottomRightLighting];
+				userData.bottomRightUniformReference = null;
+				userData.bottomLeftUniformReference = null;
 			}
 			// down
 			else if (d == ADDWALL_DOWN) {
 				// console.log(`making down at ${x}, ${y}`);
-
 				wallMesh.position.x = x * SIDE + SIDE * 0.5;
 				wallMesh.position.z = -y * SIDE;
 				wallMesh.rotation.y = Math.PI;
-				cell.down = wallMesh;
+
+				userData.bottomLeftUniformReference = [uniforms.bottomRightLighting, uniforms.topRightLighting];
+				userData.bottomRightUniformReference = [uniforms.bottomLeftLighting, uniforms.topLeftLighting];
+				userData.topLeftUniformReference = null;
+				userData.topRightUniformReference = null;
 			}
 
 			walls.root.add(wallMesh);

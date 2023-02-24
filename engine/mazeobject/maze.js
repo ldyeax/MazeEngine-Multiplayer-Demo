@@ -9,6 +9,8 @@ export default class Maze extends MazeObject {
 	constructor(mazeEngine, args) {
 		super(mazeEngine, args);
 
+		// console.log(`Instantiating Maze: ${JSON.stringify(args)}`);
+
 		let width = this.width = mazeEngine.width = args.width;
 		let height = this.height = mazeEngine.height = args.height;
 

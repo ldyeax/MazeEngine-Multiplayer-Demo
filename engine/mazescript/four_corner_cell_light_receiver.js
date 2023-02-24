@@ -16,6 +16,8 @@ let tmp_surrounding = [
 	[null, null, null]
 ];
 
+window.tmp_surrounding = tmp_surrounding;
+
 /*
 0,2  1,2  2,2
 0,1  1,1  2,1
@@ -34,7 +36,7 @@ function tmp_recurse(cell, x, y, depth) {
 	if (typeof x === 'undefined') {
 		for (let _y = 0; _y < 3; _y++) {
 			for (let _x = 0; _x < 3; _x++) {
-				tmp_surrounding[_y][_x] = false;
+				tmp_surrounding[_y][_x] = null;
 			}
 		}
 		x = 1;
@@ -46,7 +48,6 @@ function tmp_recurse(cell, x, y, depth) {
 		return;
 	}
 	tmp_surrounding[y][x] = cell;
-
 	if (depth == 2) {
 		return;
 	}
@@ -58,11 +59,26 @@ function tmp_recurse(cell, x, y, depth) {
 	if (cell.below && y > 0) {
 		tmp_recurse(cell.below, x, y - 1, depth);
 	}
-	if (cell.left && x > 0) {
-		tmp_recurse(cell.left, x - 1, y, depth);
+	if (cell.leftOf && x > 0) {
+		tmp_recurse(cell.leftOf, x - 1, y, depth);
 	}
-	if (cell.right && x < 2) {
-		tmp_recurse(cell.right, x + 1, y, depth);
+	if (cell.rightOf && x < 2) {
+		tmp_recurse(cell.rightOf, x + 1, y, depth);
+	}
+}
+
+function set_values(uniformReference, value) {
+	if (uniformReference == null) {
+		return;
+	}
+	if (Array.isArray(uniformReference)) {
+		// console.log("isArray:");
+		// console.log(uniformReference);
+		for (let i = 0; i < uniformReference.length; i++) {
+			uniformReference[i].value = value;
+		}
+	} else {
+		uniformReference.value = value;
 	}
 }
 
@@ -146,10 +162,10 @@ export default class FourCornerCellLightReceiver extends MazeScript {
 			}
 			bottomRightLighting /= bottomRightCount;
 
-			obj.material.uniforms.topLeftLighting.value = topLeftLighting;
-			obj.material.uniforms.topRightLighting.value = topRightLighting;
-			obj.material.uniforms.bottomLeftLighting.value = bottomLeftLighting;
-			obj.material.uniforms.bottomRightLighting.value = bottomRightLighting;
+			set_values(obj.material.userData.topLeftUniformReference, topLeftLighting);
+			set_values(obj.material.userData.topRightUniformReference, topRightLighting);
+			set_values(obj.material.userData.bottomLeftUniformReference, bottomLeftLighting);
+			set_values(obj.material.userData.bottomRightUniformReference, bottomRightLighting);
 		}
 
 		for (let child of obj.children) {

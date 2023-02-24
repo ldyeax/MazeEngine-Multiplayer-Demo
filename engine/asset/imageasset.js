@@ -60,7 +60,18 @@ export default class ImageAsset extends Asset {
 			this.root.castShadow = true;
 
 			super.loaded();
-			this.mazeEngine.imageAssets[key] = this.root;
+			this.mazeEngine.imageAssets[key] = this;
 		});
+	}
+
+	getRoot() {
+		let ret = this.root.clone();
+		ret.material = ret.material.clone();
+		// The mazeObject may have to reorient these, so they're stored as references
+		ret.material.userData.topLeftUniformReference = ret.material.uniforms.topLeftLighting;
+		ret.material.userData.topRightUniformReference = ret.material.uniforms.topRightLighting;
+		ret.material.userData.bottomLeftUniformReference = ret.material.uniforms.bottomLeftLighting;
+		ret.material.userData.bottomRightUniformReference = ret.material.uniforms.bottomRightLighting;
+		return ret;
 	}
 }
