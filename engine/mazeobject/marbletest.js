@@ -2,15 +2,22 @@ import MazeObject from "engine/mazeobject.js";
 import misc  from "engine/misc.js";
 import Spin from "mazescript/spin.js";
 import * as THREE from "three";
+import CellAlphaReceiver from "mazescript/cellalphareceiver.js";
 
 let mazeEngine = null;
 
 export default class MarbleTest extends MazeObject {
+	/**
+	 * @type {Object.<string, number>}
+	 */
 	static #MARBLE_STATE = {
 		IDLE: 0,
 		SHRINKING: 1
 	};
 
+	/**
+	 * @type {number}
+	 */
 	#state = MarbleTest.#MARBLE_STATE.IDLE;
 
 	constructor(mazeEngine, args) {
@@ -20,12 +27,16 @@ export default class MarbleTest extends MazeObject {
 		this.name = "MarbleTest" + this.id;
 
 		this.root = mazeEngine.gltfAssets.marbletest.clone();
-		let spin = this.addScript(Spin);
-		spin.speed = x + y + 1;
-		this.lastPosition = this.position = mazeEngine.gridToWorld(x, y);
+
+		// let spin = this.addScript(Spin);
+		// spin.speed = x + y + 1;
+
+		this.position = mazeEngine.gridToWorld(x, y);
 		this.position.y = 0;
 		this.scale = new THREE.Vector3(3, 3, 3);
-		window.mtg = this;
+		window["marble"+this.id] = this;
+
+		//this.cellAlphaReceiver = this.addScript(CellAlphaReceiver);
 	}
 	update() {
 		super.update();

@@ -57,10 +57,10 @@ export default class GLTFAsset extends Asset {
 
 	constructor(mazeEngine, key) {
 		super(mazeEngine, key);
-		let url = this.url = mazeEngine.gltfAssets[key];
+		this.url = mazeEngine.gltfAssets[key];
 		gltfLoader.load(this.url, (gltf) => {
 			this.root = gltf.scene;
-			this.setProperties(this.root);
+			//this.setProperties(this.root);
 			super.loaded();
 			this.mazeEngine.gltfAssets[key] = this.root;
 		});
