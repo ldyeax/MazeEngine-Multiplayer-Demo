@@ -140,7 +140,7 @@ export default class MazeEngine {
 	 */
 	gltfAssets = {
 		N64: "assets/n64/scene.gltf",
-		marbletest: "assets/marbletest.gltf",
+		marbletest: "assets/marbletest2.gltf",
 	};
 	/**
 	 * @type {Object.<string, THREE.Mesh>}

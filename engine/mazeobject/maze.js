@@ -15,7 +15,7 @@ export default class Maze extends MazeObject {
 		mazeEngine.cells = this.cells = generateMaze(width, height);
 
 		mazeEngine.ceilingMazeObject = this.ceilingMazeObject = mazeEngine.instantiate(Ceiling);
-		//mazeEngine.wallsMazeObject = this.wallsMazeObject = mazeEngine.instantiate(Walls);
-		//mazeEngine.floorMazeObject = this.floorMazeObject = mazeEngine.instantiate(Floor);
+		mazeEngine.wallsMazeObject = this.wallsMazeObject = mazeEngine.instantiate(Walls);
+		mazeEngine.floorMazeObject = this.floorMazeObject = mazeEngine.instantiate(Floor);
 	}
 }

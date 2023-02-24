@@ -1,20 +1,26 @@
-import Asset from "../asset.js";
+import Asset from "engine/asset.js";
 
 import {
 	GLTFLoader
-} from "../../three_examples/jsm/loaders/GLTFLoader.js";
+} from "three_examples/jsm/loaders/GLTFLoader.js";
+
+import * as SkeletonUtils from "three_examples/jsm/utils/SkeletonUtils.js";
+
+import misc from "engine/misc.js";
 
 const gltfLoader = new GLTFLoader();
 
+/**
+ * @typedef {import("engine/mazeengine.js").default} MazeEngine
+ */
 export default class GLTFAsset extends Asset {
 	static #defaultProperties = {
-		side: 2,
-		transparent: false,
-		receiveShadow: true,
-		castShadow: true,
-	}
+		transparent: true,
+		receiveShadow: false,
+		castShadow: false,
+	};
 
-	setProperties(gltfObject, properties = {}, depth = 0) {
+	static setPropertiesAndCloneMaterials(gltfObject, properties = {}, depth = 0) {
 		// let l = function(s){ prependLog(s, depth); }
 		let l = function (_) {};
 		l(`setProperties(${gltfObject.name}, ${JSON.stringify(properties)}))`);
@@ -32,7 +38,8 @@ export default class GLTFAsset extends Asset {
 		}
 		if (gltfObject.material) {
 			l("Found material");
-			this.setProperties(gltfObject.material, properties, depth + 1);
+			gltfObject.material = gltfObject.material.clone();
+			GLTFAsset.setPropertiesAndCloneMaterials(gltfObject.material, properties, depth + 1);
 		} else {
 			l("No material");
 		}
@@ -48,21 +55,26 @@ export default class GLTFAsset extends Asset {
 		if (gltfObject.children) {
 			l("found children");
 			for (let child of gltfObject.children) {
-				this.setProperties(child, properties, depth + 1);
+				GLTFAsset.setPropertiesAndCloneMaterials(child, properties, depth + 1);
 			}
 		} else {
 			l("No children");
 		}
 	}
 
+	getRoot() {
+		let ret = SkeletonUtils.clone(this.gltf.scene);
+		GLTFAsset.setPropertiesAndCloneMaterials(ret);
+		return ret;
+	}
+
 	constructor(mazeEngine, key) {
 		super(mazeEngine, key);
 		this.url = mazeEngine.gltfAssets[key];
 		gltfLoader.load(this.url, (gltf) => {
-			this.root = gltf.scene;
-			//this.setProperties(this.root);
+			this.gltf = gltf;
 			super.loaded();
-			this.mazeEngine.gltfAssets[key] = this.root;
+			this.mazeEngine.gltfAssets[key] = this;
 		});
 	}
-}
+};

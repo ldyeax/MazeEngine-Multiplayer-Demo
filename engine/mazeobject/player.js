@@ -39,7 +39,7 @@ export default class Player extends MazeObject {
 	constructor(mazeEngine, args) {
 		super(mazeEngine, args);
 		this.name = "Player";
-		this.root = null;
+		this.root = new THREE.Group();
 
 		this.moveSpeed = mazeEngine.SIDE * 2;
 
@@ -53,6 +53,9 @@ export default class Player extends MazeObject {
 		this.lastPosition = this.position.clone();
 
 		this.scaleWithGlobalY = false;
+
+		let pointLight = new THREE.PointLight(0xffffff, 1, 0, 0.1);
+		this.root.add(pointLight);
 	}
 
 	update() {

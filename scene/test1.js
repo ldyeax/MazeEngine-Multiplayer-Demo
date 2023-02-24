@@ -20,13 +20,14 @@ export default class TestScene1 extends MazeObject {
 
 		let scene = mazeEngine.scene;
 
+		let width = 8;
+		let height = 8;
 		// Maze must come first
-		mazeEngine.instantiate(Maze, {width: 8, height: 8});
+		mazeEngine.instantiate(Maze, {width: width, height: height});
 
-		// add scene light
-		let ambientLight = new THREE.AmbientLight(0xFFFFFF);
-		ambientLight.intensity = 1;
-		scene.add(ambientLight);
+		// let ambientLight = new THREE.AmbientLight(0xFFFFFF);
+		// ambientLight.intensity = 1;
+		// scene.add(ambientLight);
 
 		mazeEngine.instantiate(CellLightManager);
 
@@ -34,10 +35,11 @@ export default class TestScene1 extends MazeObject {
 		let player = mazeEngine.player = this.player = mazeEngine.instantiate(Player);
 		player.addScript(CellLightSource);
 		
-		mazeEngine.instantiate(MarbleTest, {x:0, y:1});
-
-		setTimeout(function(){
-			marbleTest(scene);
-		}, 10);
+		//mazeEngine.instantiate(MarbleTest, {x:0, y:1});
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				mazeEngine.instantiate(MarbleTest, {x:x, y:y});
+			}
+		}
 	}
 }

@@ -7,7 +7,7 @@ import MazeScript from "engine/mazescript.js";
 export default class CellAlphaReceiver extends MazeScript {
 	recurse(obj, cell) {
 		if (obj.material) {
-			//obj.material.opacity = 1; //cell.lightMapValue;
+			obj.material.opacity = cell.lightMapValue;
 		}
 		for (let child of obj.children) {
 			this.recurse(child, cell);

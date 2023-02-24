@@ -24,6 +24,53 @@ import {
 	GLTFLoader
 } from "./three_examples/jsm/loaders/GLTFLoader.js";
 
+const cloneGltf = (gltf) => {
+    const clone = {
+        animations: gltf.animations,
+        scene: gltf.scene.clone(true)
+    };
+
+    const skinnedMeshes = {};
+
+    gltf.scene.traverse(node => {
+        if (node.isSkinnedMesh) {
+            skinnedMeshes[node.name] = node;
+        }
+    });
+
+    const cloneBones = {};
+    const cloneSkinnedMeshes = {};
+
+    clone.scene.traverse(node => {
+        if (node.isBone) {
+            cloneBones[node.name] = node;
+        }
+
+        if (node.isSkinnedMesh) {
+            cloneSkinnedMeshes[node.name] = node;
+        }
+    });
+
+    for (let name in skinnedMeshes) {
+        const skinnedMesh = skinnedMeshes[name];
+        const skeleton = skinnedMesh.skeleton;
+        const cloneSkinnedMesh = cloneSkinnedMeshes[name];
+
+        const orderedCloneBones = [];
+
+        for (let i = 0; i < skeleton.bones.length; ++i) {
+            const cloneBone = cloneBones[skeleton.bones[i].name];
+            orderedCloneBones.push(cloneBone);
+        }
+
+        cloneSkinnedMesh.bind(
+            new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses),
+            cloneSkinnedMesh.matrixWorld);
+    }
+
+    return clone;
+}
+
 const gltfLoader = new GLTFLoader();
 
 const scene = new THREE.Scene();
@@ -57,7 +104,7 @@ document.getElementById("btn1").addEventListener("click", () => {
 
 document.getElementById("btn2").addEventListener("click", () => {
     gltfLoader.load('./assets/marbletest2.gltf', (gltf) => {
-        let marble2 = gltf.scene.clone();
+        let marble2 = cloneGltf(gltf).scene;
         marble2.position.set(50, -50, -200);
         marble2.scale.set(3, 3, 3);
         scene.add(marble2);
