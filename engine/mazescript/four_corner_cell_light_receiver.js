@@ -83,7 +83,7 @@ function set_values(uniformReference, value) {
 }
 
 /**
- * @summary Sets the corner lights of a plane based on the lightMapValue of surrounding cells.
+ * @description Sets the corner lights of a plane based on the lightMapValue of surrounding cells.
  */
 export default class FourCornerCellLightReceiver extends MazeScript {
 	constructor(mazeEngine, args) {

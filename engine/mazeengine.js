@@ -25,10 +25,10 @@ const KEYSTATE_NONE = 0;
 let noclip = window.location.search.indexOf("noclip") != -1;
 
 /**
- * @typedef import("engine/mazeobject.js").default MazeObject
- * @typedef import("engine/mazescript.js").default MazeScript
- * @typedef import("engine/cell.js").default Cell
- * @typedef import("mazeobject/player.js").default Player
+ * @typedef {import("engine/mazeobject.js").default} MazeObject
+ * @typedef {import("engine/mazescript.js").default} MazeScript
+ * @typedef {import("engine/cell.js").default} Cell
+ * @typedef {import("mazeobject/player.js").default} Player
  */
 export default class MazeEngine {
 	/**
@@ -49,7 +49,7 @@ export default class MazeEngine {
 	INV_SIDE_NEGATIVE = 0;
 
 	/**
-	 * @type {Cell[]}
+	 * @type {Cell[][]}
 	 */
 	cells = [];
 
