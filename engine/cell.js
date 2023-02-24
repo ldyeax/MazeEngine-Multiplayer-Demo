@@ -37,6 +37,24 @@ export default class Cell {
 	 * @type {number}
 	 */
 	lightMapValue = 1.0;
+
+	/**
+	 * @type {Cell}
+	 */
+	above = null;
+	/**
+	 * @type {Cell}
+	 */
+	below = null;
+	/**
+	 * @type {Cell}
+	 */
+	leftOf = null;
+	/**
+	 * @type {Cell}
+	 */
+	rightOf = null;
+
 	constructor(x = 0, y = 0, up = true, left = true, right = true, down = true) {
 		this.x = x;
 		this.y = y;

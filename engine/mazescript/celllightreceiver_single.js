@@ -3,7 +3,7 @@ import MazeScript from "engine/mazescript.js";
 /**
  * @typedef {import("engine/cell.js").default} Cell
  */
-export default class CellLightReceiver extends MazeScript {
+export default class CellLightReceiverSingle extends MazeScript {
 	recurse(obj) {
 		if (obj.userData && obj.userData.cell && obj.material) {
 			/**

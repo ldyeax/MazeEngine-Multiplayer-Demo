@@ -1,6 +1,6 @@
 import MazeObject from "engine/mazeobject.js";
 import * as THREE from "three";
-import CellLightReceiver from "mazescript/celllightreceiver.js";
+import FourCornerCellLightReceiver from "engine/mazescript/four_corner_cell_light_receiver.js";
 /**
  * @typedef {import("engine/mazeengine.js").default} MazeEngine
  */
@@ -41,6 +41,6 @@ export default class Floor extends MazeObject {
 		}
 		// #endregion
 
-		this.cellLightReceiver = this.addScript(CellLightReceiver);
+		this.cellLightReceiver = this.addScript(FourCornerCellLightReceiver);
 	}
 }

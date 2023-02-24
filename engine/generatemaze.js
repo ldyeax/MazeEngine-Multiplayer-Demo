@@ -203,5 +203,22 @@ export default function generateMaze(width, height) {
 
 	console.log(mazeAsciiArt(ret));
 
+	for (let y = 0; y < height; y++) {
+		for (let x = 0; x < width; x++) {
+			if (!ret[y][x].up) {
+				ret[y][x].above = ret[y + 1][x];
+			}
+			if (!ret[y][x].down) {
+				ret[y][x].below = ret[y - 1][x];
+			}
+			if (!ret[y][x].left) {
+				ret[y][x].leftOf = ret[y][x - 1];
+			}
+			if (!ret[y][x].right) {
+				ret[y][x].rightOf = ret[y][x + 1];
+			}
+		}
+	}
+
 	return ret;
 };

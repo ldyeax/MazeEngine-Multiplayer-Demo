@@ -1,6 +1,6 @@
-import tracedLighting from "../shader/tracedlighting.js";
-import Asset from "../asset.js";
-import * as THREE from '../../three/Three.js';
+import shader from "shader/fourcornerlittexture.js";
+import Asset from "engine/asset.js";
+import * as THREE from "three";
 const textureLoader = new THREE.TextureLoader();
 
 export default class ImageAsset extends Asset {
@@ -35,12 +35,24 @@ export default class ImageAsset extends Asset {
 					repeat: {
 						value: new THREE.Vector2(1, 1),
 					},
-					lightMapValue: {
-						value: 1.0,
+					// lightMapValue: {
+					// 	value: 1.0,
+					// }
+					topLeftLighting: {
+						value: 1.0
+					},
+					topRightLighting: {
+						value: 1.0
+					},
+					bottomLeftLighting: {
+						value: 1.0
+					},
+					bottomRightLighting: {
+						value: 1.0
 					}
 				},
-				vertexShader: tracedLighting.vertex,
-				fragmentShader: tracedLighting.fragment
+				vertexShader: shader.vertex,
+				fragmentShader: shader.fragment
 			});
 
 			this.root = new THREE.Mesh(geometry, material);

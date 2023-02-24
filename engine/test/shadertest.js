@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import tracedLighting from "shader/tracedlighting.js";
+import tracedLighting from "engine/shader/littexture1.js";
 
 const textureLoader = new THREE.TextureLoader();
 const wallUrl = "assets/img/wall.png";
