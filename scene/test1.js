@@ -20,7 +20,7 @@ export default class TestScene1 extends MazeObject {
 
 		let scene = mazeEngine.scene;
 
-		let width = 2;
+		let width = 8;
 		let height = 8;
 		// Maze must come first
 		mazeEngine.instantiate(Maze, {width: width, height: height});
