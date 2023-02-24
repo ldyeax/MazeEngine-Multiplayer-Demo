@@ -44,16 +44,16 @@ export default class CellLightSource extends MazeScript {
 			cell.lightMapValue = Math.max(cell.lightMapValue, value);
 
 			if (lastDirection != CELL_DOWN && !cell.up) {
-				recurse(x, y + 1, value, !first && lastDirection == CELL_UP, CELL_UP);
+				recurse(x, y + 1, value, !first && lastDirection != CELL_UP, CELL_UP);
 			}
 			if (lastDirection != CELL_UP && !cell.down) {
-				recurse(x, y - 1, value, !first && lastDirection == CELL_DOWN, CELL_DOWN);
+				recurse(x, y - 1, value, !first && lastDirection != CELL_DOWN, CELL_DOWN);
 			}
 			if (lastDirection != CELL_RIGHT && !cell.left) {
-				recurse(x - 1, y, value, !first && lastDirection == CELL_LEFT, CELL_LEFT);
+				recurse(x - 1, y, value, !first && lastDirection != CELL_LEFT, CELL_LEFT);
 			}
 			if (lastDirection != CELL_LEFT && !cell.right) {
-				recurse(x + 1, y, value, !first && lastDirection == CELL_RIGHT, CELL_RIGHT);
+				recurse(x + 1, y, value, !first && lastDirection != CELL_RIGHT, CELL_RIGHT);
 			}
 		}
 		recurse(gridPos.x, gridPos.y, 1.0, false, CELL_START);
