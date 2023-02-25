@@ -329,6 +329,14 @@ export default class MazeEngine {
 		}
 
 		for (let mazeObject of this.#mazeObjects) {
+			mazeObject.update2();
+		}
+
+		for (let mazeObject of this.#mazeObjects) {
+			mazeObject.updateScripts2();
+		}
+
+		for (let mazeObject of this.#mazeObjects) {
 			let root = mazeObject.root;
 			if (root) {
 				let position = mazeObject.position;

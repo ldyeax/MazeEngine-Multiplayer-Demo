@@ -79,6 +79,8 @@ export default class MazeObject {
 	update() {
 		this.lastPosition = this.position.clone();
 	}
+	update2(){
+	}
 	lateUpdate() {
 	}
 
@@ -90,6 +92,11 @@ export default class MazeObject {
 	updateScripts() {
 		for (let script of this.scripts) {
 			script.update();
+		}
+	}
+	updateScripts2() {
+		for (let script of this.scripts) {
+			script.update2();
 		}
 	}
 	lateUpdateScripts() {

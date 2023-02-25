@@ -28,10 +28,11 @@ export default class CellLightSource extends MazeScript {
 		let subtraction = 1.0/6.0;
 		let recurse = function(x, y, value, bend, lastDirection) {
 			if (lastDirection != CELL_START) {
-				value -= subtraction;
 				if (bend) {
 					value *= 0.5;
 				}
+
+				value -= subtraction;
 
 				if (value < 0) {
 					return;
@@ -75,7 +76,15 @@ export default class CellLightSource extends MazeScript {
 	update() {
 		super.update();
 		let ls1 = this.lightString;
+
 		this.updateLightMap();
+
+		// for (let y = 0; y < this.mazeEngine.height; y++) {
+		// 	for (let x = 0; x < this.mazeEngine.width; x++) {
+		// 		this.mazeEngine.cells[y][x].lightMapValue = (x * y / (this.mazeEngine.width * this.mazeEngine.height));
+		// 	}
+		// }
+
 		// if (this.lightString != ls1) {
 		// 	console.log("===lightmap changed===");
 		// 	console.log(this.lightString);

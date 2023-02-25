@@ -20,8 +20,8 @@ export default class TestScene1 extends MazeObject {
 
 		let scene = mazeEngine.scene;
 
-		let width = 8;
-		let height = 8;
+		let width = 4;
+		let height = 4;
 		// Maze must come first
 		mazeEngine.instantiate(Maze, {width: width, height: height});
 
@@ -36,10 +36,10 @@ export default class TestScene1 extends MazeObject {
 		player.addScript(CellLightSource);
 		
 		//mazeEngine.instantiate(MarbleTest, {x:0, y:1});
-		for (let y = 0; y < height; y++) {
-			for (let x = 0; x < width; x++) {
-				mazeEngine.instantiate(MarbleTest, {x:x, y:y});
-			}
-		}
+		// for (let y = 0; y < height; y++) {
+		// 	for (let x = 0; x < width; x++) {
+		// 		mazeEngine.instantiate(MarbleTest, {x:x, y:y});
+		// 	}
+		// }
 	}
 }

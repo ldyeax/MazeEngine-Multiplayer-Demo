@@ -29,5 +29,6 @@ export default class MazeScript {
 	}
 	preUpdate() {}
 	update() {}
+	update2() {}
 	lateUpdate() {}
 };
