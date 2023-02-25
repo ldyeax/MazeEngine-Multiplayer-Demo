@@ -4,18 +4,8 @@ import * as THREE from "three";
 preupdate: set clear all cell lighting
 update: set primary cell values
 update2: set corner cell values
-lateupdate: write to shader
+lateupdate: each mesh writes to its own shader
 */
-
-const UP = 1;
-const DOWN = 2;
-const LEFT = 3;
-const RIGHT = 4;
-
-const CLOCKWISE = 1;
-const COUNTERCLOCKWISE = 2;
-
-// function recurseCellCorners(cell, )
 
 /**
  * @typedef {import("engine/mazeobject.js").default} MazeObject
