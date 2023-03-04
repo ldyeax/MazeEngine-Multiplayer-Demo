@@ -5,6 +5,7 @@ import GLTFAsset from "asset/gltfasset.js";
 import InputManager from "mazeobject/inputmanager.js";
 
 import * as THREE from "three";
+import CellLightManager from "mazeobject/celllightmanager.js";
 
 const SIDE = 320;
 const N_SIDE = -SIDE;
@@ -29,6 +30,7 @@ let noclip = window.location.search.indexOf("noclip") != -1;
  * @typedef {import("engine/mazescript.js").default} MazeScript
  * @typedef {import("engine/cell.js").default} Cell
  * @typedef {import("mazeobject/player.js").default} Player
+ * @typedef {import("mazeobject/celllightmanager.js").default} CellLightManager
  */
 export default class MazeEngine {
 	/**
@@ -52,6 +54,10 @@ export default class MazeEngine {
 	 * @type {Cell[][]}
 	 */
 	cells = [];
+	/**
+	 * @type {Cell[]}
+	 */
+	cellsFlat = [];
 
 	/**
 	 * @type {Player}
@@ -65,6 +71,11 @@ export default class MazeEngine {
 	 * @type {number}
 	 */
 	height = 8;
+
+	/**
+	 * @type {CellLightManager}
+	 */
+	cellLightManager = null;
 
 	// #region misc function
 	/**

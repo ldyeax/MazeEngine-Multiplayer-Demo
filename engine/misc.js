@@ -1,5 +1,13 @@
 import * as THREE from "three";
 
+window.dec2bin = function(dec, padding = 32) {
+	let ret = (dec >>> 0).toString(2);
+	while (ret.length < padding) {
+		ret = "0" + ret;
+	}
+	return ret;
+}
+
 export default {
 	/**
 	 * @type {number}

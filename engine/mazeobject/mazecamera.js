@@ -16,7 +16,10 @@ export default class MazeCamera extends MazeObject {
 		let rotation = args.rotation || new THREE.Vector3(0, 0, 0);
 
 		let camera = window.camera = mazeEngine.camera = 
-			new THREE.PerspectiveCamera(fov, aspect, near, far);
+			new THREE.PerspectiveCamera(
+				args.fov ? args.fov : fov, 
+				aspect, near, far
+			);
 
 		this.position = position;
 		this.rotation = rotation;

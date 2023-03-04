@@ -20,8 +20,8 @@ export default class TestScene1 extends MazeObject {
 
 		let scene = mazeEngine.scene;
 
-		let width = 8;
-		let height = 8;
+		let width = 2;
+		let height = 2;
 		// Maze must come first
 		mazeEngine.instantiate(Maze, {width: width, height: height});
 
@@ -29,9 +29,7 @@ export default class TestScene1 extends MazeObject {
 		// ambientLight.intensity = 1;
 		// scene.add(ambientLight);
 
-		mazeEngine.instantiate(CellLightManager);
-
-		mazeEngine.cameraMazeObject = this.cameraMazeObject = mazeEngine.instantiate(MazeCamera);
+		mazeEngine.cameraMazeObject = this.cameraMazeObject = mazeEngine.instantiate(MazeCamera, {fov: 90});
 		let player = mazeEngine.player = this.player = mazeEngine.instantiate(Player);
 		player.addScript(CellLightSource);
 		

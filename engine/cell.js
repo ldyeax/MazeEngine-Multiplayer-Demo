@@ -64,22 +64,22 @@ export default class Cell {
 	 */
 	lightMapValue = 0;
 	/**
-	 * @type {number}
+	 * @type {number} from 0 to 1
 	 * @description Lighting value calculated per frame
 	 */
 	topLeftLight = null;
 	/**
-	 * @type {number}
+	 * @type {number} from 0 to 1
 	 * @description Lighting value calculated per frame
 	 */
 	topRightLight = null;
 	/**
-	 * @type {number}
+	 * @type {number} from 0 to 1
 	 * @description Lighting value calculated per frame
 	 */
 	bottomLeftLight = null;
 	/**
-	 * @type {number}
+	 * @type {number} from 0 to 1
 	 * @description Lighting value calculated per frame
 	 */
 	bottomRightLight = null;

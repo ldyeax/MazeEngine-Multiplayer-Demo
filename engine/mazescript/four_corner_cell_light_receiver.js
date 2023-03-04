@@ -39,6 +39,8 @@ export default class FourCornerCellLightReceiver extends MazeScript {
 			 */
 			let cell = obj.userData.cell;
 
+			window.tll = cell.topLeftLight;
+
 			set_values(obj.material.userData.topLeftUniformReference, cell.topLeftLight);
 			set_values(obj.material.userData.topRightUniformReference, cell.topRightLight);
 			set_values(obj.material.userData.bottomLeftUniformReference, cell.bottomLeftLight);
