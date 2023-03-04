@@ -1,0 +1,10 @@
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+    - name: maze_auto_update
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: ${{ secrets.MAZE_AUTO_UPDATE_URL }}
+        method: 'GET'
+        data: '{}'
