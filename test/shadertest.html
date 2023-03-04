@@ -6,8 +6,8 @@
 <script type=importmap>
 {
 	"imports": {
-		"three": "./three/Three.js",
-		"shader/": "./engine/shader/"
+		"three": "../three/Three.js",
+		"shader/": "../engine/shader/"
 	}
 }
 </script>
@@ -17,8 +17,8 @@
 <canvas width=640 height=480 id=canvas></canvas>
 
 <script type=module>
-import * as THREE from './three/Three.js';
-import shaderTest from "./engine/test/shadertest.js";
+import * as THREE from '../three/Three.js';
+import shaderTest from "../engine/test/shadertest.js";
 
 const scene = new THREE.Scene();
 
