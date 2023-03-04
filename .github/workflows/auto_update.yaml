@@ -1,3 +1,7 @@
+name: "auto_update"
+
+on: [ push ]
+
 jobs:
   deployment:
     runs-on: ubuntu-latest
