@@ -1,3 +1,5 @@
+// Node.js code thanks to Tiny Jasmini
+
 // Modules
 const express = require('express');
 const http = require('http');
@@ -13,21 +15,20 @@ const port = 3001;
 
 // Nunjucks
 nunjucks.configure([path.join(__dirname, './views')], {
-    autoescape: true,
-    express: app
+	autoescape: true,
+	express: app
 });
 
 app.set('view engine', 'nunjucks');
 
 // Validator
-app.use(function (req, res, next) {
-
-    // Get User IP
-    req.ip = getUserIP(req, { isFirebase: false });
-
-    // Complete
-    next();
-
+app.use(function (req, _, next) {
+	// Get User IP
+	req.ip = getUserIP(req, {
+		isFirebase: false
+	});
+	// Complete
+	next();
 });
 
 // Helmet Protection
@@ -49,25 +50,20 @@ app.use(helmet.referrerPolicy());
 app.use(helmet.xssFilter());
 
 // Socket IO
-const { Server } = require('socket.io');
+const {
+	Server
+} = require('socket.io');
 const io = new Server(server);
 
 // Test Socket IO
 io.on('connection', (socket) => {
+	console.log('a user connected on the tiny pudding! :3');
+	console.log('User ID: ' + socket.id);
 
-    console.log('a user connected on the tiny pudding! :3');
-    console.log('User ID: ' + socket.id);
-
-    socket.on('disconnect', () => {
-        console.log('user disconnected from the tiny pudding! :3');
-        console.log('User ID: ' + socket.id);
-    });
-
-});
-
-// Test node Page
-app.get('/tiny-test', (req, res) => {
-    res.send('<h1>Tiny Hello world. :3</h1>');
+	socket.on('disconnect', () => {
+		console.log('user disconnected from the tiny pudding! :3');
+		console.log('User ID: ' + socket.id);
+	});
 });
 
 // Static Files
@@ -76,5 +72,5 @@ error_page(app);
 
 // Start Server
 server.listen(port, () => {
-    console.log(`Test app listening on port ${port}`);
+	console.log(`Test app listening on port ${port}`);
 });
