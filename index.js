@@ -14,8 +14,14 @@ const io = new Server(server);
 
 // Test Socket IO
 io.on('connection', (socket) => {
-    console.log('a user connected with pudding! :3');
+
+    console.log('a user connected on the tiny pudding! :3');
     console.log('User ID: ' + socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected from the tiny pudding! :3');
+      });
+
 });
 
 // Test node Page
