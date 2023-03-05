@@ -5,7 +5,7 @@ module.exports = function (cache) {
         cache.online++;
         cache.user[socket.id] = { ip: socket.handshake.address };
 
-        // COnnect Detected
+        // Connect Detected
         console.log('[socket] [' + socket.id + '] a user connected on the tiny pudding! :3');
         console.log('[socket] [' + socket.id + '] user ip ' + cache.user[socket.id].ip);
 
@@ -21,6 +21,18 @@ module.exports = function (cache) {
                 delete cache.user[socket.id];
             }
 
+        });
+
+		// Receive Map
+		socket.on('maze-map-sender', (cells, fn) => {
+			console.log(cells);
+			if(Array.isArray(cells)) {
+				cache.user[socket.id].map = cells;
+				console.log('[socket] [' + socket.id + '] Map from the user is downloaded!');
+				fn(true);
+			} else {
+				fn(false);
+			}
         });
 
     };

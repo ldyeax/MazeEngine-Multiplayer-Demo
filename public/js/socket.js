@@ -17,15 +17,22 @@ const startSocketIO = function () {
 			}
 
 			// Send Map
-			const senderMap = function() {
-				
+			const senderMap = function () {
+
 				// Exist Cells
-				if(Array.isArray(gameCache.cells)) {
-					gameCache.socket.emit('maze-map-sender', gameCache.cells);
+				if (Array.isArray(gameCache.cells)) {
+					console.log('[socket] [' + gameCache.socket.id + '] Map is being uploaded!');
+					gameCache.socket.emit('maze-map-sender', gameCache.cells, function (complete) {
+						if (complete) {
+							console.log('[socket] [' + gameCache.socket.id + '] Map Upload Complete!');
+						} else {
+							console.log('[socket] [' + gameCache.socket.id + '] Map Upload Failed!');
+						}
+					});
 				}
 
 				// Try Again
-				else { setTimeout(senderMap, 300); }
+				else { setTimeout(function() { senderMap(); }, 300); }
 
 			};
 
@@ -35,9 +42,9 @@ const startSocketIO = function () {
 				// Welcome
 				console.log(`[socket] [${gameCache.socket.id}] Connected!`);
 				senderMap();
-			
+
 			});
-			
+
 			// Disconnected
 			gameCache.socket.on('disconnect', () => {
 				console.log(`[socket] Disconnected!`);
