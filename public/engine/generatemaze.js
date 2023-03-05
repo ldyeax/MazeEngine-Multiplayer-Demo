@@ -234,5 +234,5 @@ export default function generateMaze(width, height, seed) {
 		}
 	}
 
-	return {ret, seed: seedGenerator, width, height };
+	return {ret, seed: seedGenerator };
 };
