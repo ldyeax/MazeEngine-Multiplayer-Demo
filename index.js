@@ -8,6 +8,10 @@ const app = express();
 const server = http.createServer(app);
 const port = 3001;
 
+// Helmet Protection
+const helmet = require('helmet');
+app.use(helmet());
+
 // Socket IO
 const { Server } = require('socket.io');
 const io = new Server(server);
