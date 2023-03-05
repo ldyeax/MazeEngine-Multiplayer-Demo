@@ -128,7 +128,7 @@ tinyLib.modal = function (data) {
 
     if (typeof data.dialog !== "string") { data.dialog = ''; }
 
-    const modal = $("<div>", { class: "modal fade", id: data.id, tabindex: -1, role: "dialog", }).on('hidden.bs.modal', function (e) {
+    const modal = $("<div>", { class: "modal fade", id: data.id, tabindex: -1, role: "dialog", 'data-bs-backdrop': 'static', 'data-bs-keyboard': false }).on('hidden.bs.modal', function (e) {
         $(this).remove();
         if (typeof data.hidden === "function") {
             data.hidden();
