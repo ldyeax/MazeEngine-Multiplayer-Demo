@@ -2,10 +2,10 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const server = http.createServer(app);
 
 // Prepare Node App
 const app = express();
+const server = http.createServer(app);
 const port = 3001;
 
 // Test node Page
