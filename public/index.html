@@ -6,40 +6,7 @@
 		<meta charset="utf-8">
 		<title>Maze</title>
 		<script src="./js/clone.js"></script>
-		<script> 
-
-			var gameCache = {}; 
-			const startSocketIO = function() {
-				try {
-
-					const script = document.createElement('script');
-					document.head.appendChild(script);
-					
-					script.onload = function() { 
-
-						try {
-							gameCache.socket = io(`${location.protocol}//${location.hostname}:3001`); 
-						} catch (err) {
-							gameCache.socket = null;
-							console.error(err);
-						}
-
-
-					};
-
-					script.onerror = function(err) { console.error(err); };
-					script.async = true;
-					script.src = `${location.protocol}//${location.hostname}:3001/socket.io/socket.io.js`;
-				
-				} catch (err) {
-					gameCache.socket = null;
-					console.error(err);
-				}
-			};
-
-			startSocketIO();
-
-		</script>
+		<script src="./js/socket.js"></script>
 
 		<script type=importmap>
 		{
@@ -101,7 +68,7 @@
 			await maze.loadAssets();
 			maze.start(document.getElementById("canvas"));
 			maze.instantiate(Scene);
-			gameCache.cells = clone(maze.cells);
+			gameCache.start(maze);
 		</script>
 
 	</body>
