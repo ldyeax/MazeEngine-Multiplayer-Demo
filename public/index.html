@@ -2,7 +2,17 @@
 <meta charset=utf-8>
 <title>Maze</title>
 <script src="./socket.io/socket.io.js"></script>
-<script> var socket = io(); </script>
+<script src="./config.js"></script>
+<script> 
+
+	var socket; 
+	try {
+		socket = io(tinyCDN['cdn-apache2']);
+	} catch (err) {
+		socket = null;
+	}
+
+</script>
 <script type=importmap>
 {
 	"imports": {
