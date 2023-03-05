@@ -48,7 +48,7 @@ function mazeAsciiArt(cells) {
  * @param {number} height 
  * @returns {Cell[][]}
  */
-export default function generateMaze(width, height) {
+export default function generateMaze(width, height, seed) {
 	const seedGenerator = [];
 	width = parseInt(Math.abs(width));
 	height = parseInt(Math.abs(height));
@@ -156,6 +156,8 @@ export default function generateMaze(width, height) {
 		let trail = [];
 		let x = Math.round(width / 2);
 		let y = height - 1;
+		let countGenerator = -1;
+
 		while (secludedCellExists()) {
 			// console.log(ascii(ret));
 			// console.log("================");
@@ -172,8 +174,18 @@ export default function generateMaze(width, height) {
 				y = last.y;
 				continue;
 			}
-			let direction = Math.floor(Math.random() * 4);
+
+			countGenerator++;
+			let direction;
+
+			if(Array.isArray(seed)) {
+				direction = seed[countGenerator];
+			} else {
+				direction = Math.floor(Math.random() * 4)
+			}
+
 			seedGenerator.push(direction);
+
 			switch (direction) {
 				case 0:
 					if (tryConnectCells(y, x, y, x - 1)) {
