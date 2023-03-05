@@ -1,4 +1,4 @@
-const tinyLog = require('./tinyLog');
+const tinyLog = require('../tinyLog');
 module.exports = function (cache) {
     return function (socket) {
 
