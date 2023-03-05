@@ -1,6 +1,6 @@
 var tinyLog = function (msg, name, name2) {
 
-	const now = moment().format();
+	const now = moment().format('MM/DD/YYYY HH:mm:ss');
 
 	if (typeof name === 'string') {
 		if (typeof name2 === 'string') {
