@@ -76,7 +76,9 @@ gameCache.start = function (maze) {
 
 		// Insert Map into the cache
 		gameCache.seed = clone(maze.seed);
-		console.log(`[game] The map seed is ${maze.seed.join('')}`);
+		console.log(`[game] [map] The map seed is ${maze.seed.join('')}`);
+		console.log(`[game] [map] Width ${maze.seedSize.width}`);
+		console.log(`[game] [map] Height ${maze.seedSize.height}`);
 
 	}
 };
