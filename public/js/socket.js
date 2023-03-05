@@ -1,5 +1,5 @@
 // Create Game Cache
-var gameCache = {};
+var gameCache = { online: null };
 const startSocketIO = function () {
 	try {
 
@@ -35,6 +35,13 @@ const startSocketIO = function () {
 				else { setTimeout(function() { senderMap(); }, 300); }
 
 			};
+
+			// Online Users
+			gameCache.socket.on('online-users', (online) => {
+				if(typeof online === 'number') {
+					gameCache.online = online;
+				}
+			});
 
 			// Connection Start
 			gameCache.socket.on('connect', () => {

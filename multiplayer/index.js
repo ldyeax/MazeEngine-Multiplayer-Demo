@@ -4,6 +4,8 @@ module.exports = function (cache) {
         // Add User
         cache.online++;
         cache.user[socket.id] = { ip: socket.handshake.address };
+		socket.broadcast.emit('online-users', cache.online);
+		socket.emit('online-users', cache.online);
 
         // Connect Detected
         console.log('[socket] [' + socket.id + '] a user connected on the tiny pudding! :3');
@@ -20,6 +22,9 @@ module.exports = function (cache) {
             if (cache.user[socket.id]) {
                 delete cache.user[socket.id];
             }
+
+			socket.broadcast.emit('online-users', cache.online);
+			socket.emit('online-users', cache.online);
 
         });
 
