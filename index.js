@@ -2,11 +2,33 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const nunjucks = require('nunjucks');
+const error_page = require('./error');
+const getUserIP = require('@tinypudding/puddy-lib/http/userIP');
 
 // Prepare Node App
 const app = express();
 const server = http.createServer(app);
 const port = 3001;
+
+// Nunjucks
+nunjucks.configure([path.join(__dirname, './views')], {
+    autoescape: true,
+    express: app
+});
+
+app.set('view engine', 'nunjucks');
+
+// Validator
+app.use(function (req, res, next) {
+
+    // Get User IP
+    req.ip = getUserIP(req, { isFirebase: false });
+
+    // Complete
+    next();
+
+});
 
 // Helmet Protection
 const helmet = require('helmet');
@@ -48,12 +70,9 @@ app.get('/tiny-test', (req, res) => {
     res.send('<h1>Tiny Hello world. :3</h1>');
 });
 
-app.get('/tiny-test-2', (req, res) => {
-    res.sendFile(path.join(__dirname, './private/index.html'));
-});
-
 // Static Files
 app.use(express.static(path.join(__dirname, './public')));
+error_page(app);
 
 // Start Server
 server.listen(port, () => {
