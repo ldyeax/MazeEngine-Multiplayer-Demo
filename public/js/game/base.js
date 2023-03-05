@@ -1,5 +1,5 @@
 $.LoadingOverlay('show', {background: 'rgba(255,255,255, 0.8)'});
-gameCache.game = function (Scene, maze) {
+gameCache.game = function (Scene, Maze, maze) {
 
 	$.LoadingOverlay('hide');
 	tinyLib.modal({
@@ -18,6 +18,11 @@ gameCache.game = function (Scene, maze) {
 				
 				$('#start_game').modal('hide');
 				$.LoadingOverlay('show', {background: 'rgba(255,255,255, 0.8)'});
+
+				let width = 15;
+				let height = 15;
+				// Maze must come first
+				maze.instantiate(Maze, {width: width, height: height});
 
 				await maze.loadAssets();
 				maze.start($('#canvas')[0]);
