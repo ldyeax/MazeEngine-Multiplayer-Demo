@@ -1,6 +1,7 @@
 // Node.js code thanks to Tiny Jasmini
 
 // Modules
+const tinyLog = require('./tinyLog');
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -61,5 +62,5 @@ error_page(app);
 
 // Start Server
 server.listen(port, () => {
-	console.log(`Maze App listening on port ${port}`);
+	console.log(tinyLog(`Maze App listening on port ${port}`));
 });
