@@ -2,6 +2,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const nunjucks = require('nunjucks');
 const error_page = require('./error');
 const getUserIP = require('@tinypudding/puddy-lib/http/userIP');
 
@@ -10,6 +11,12 @@ const getUserIP = require('@tinypudding/puddy-lib/http/userIP');
 const app = express();
 const server = http.createServer(app);
 const port = 3001;
+
+// Nunjucks
+nunjucks.configure([path.join(__dirname, './views'), puddyTemplatePath], {
+    autoescape: true,
+    express: web.app
+});
 
 // Validator
 app.use(function (req, res, next) {
