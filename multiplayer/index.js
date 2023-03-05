@@ -36,17 +36,6 @@ const multiSender = function (cache) {
 
         });
 
-		// Receive Map
-		socket.on('maze-map-sender', (cells, fn) => {
-			if(Array.isArray(cells)) {
-				cache.user[socket.id].map = cells;
-				console.log(tinyLog('Map from the user is downloaded!', 'socket', socket.id));
-				fn(true);
-			} else {
-				fn(false);
-			}
-        });
-
     };
 };
 
