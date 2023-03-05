@@ -1,5 +1,7 @@
+$.LoadingOverlay('show', {background: 'rgba(255,255,255, 0.5)'});
 gameCache.game = function (Scene, maze) {
 
+	$.LoadingOverlay('hide');
 	tinyLib.modal({
 
 		id: 'start_game',
