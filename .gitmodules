@@ -1,0 +1,3 @@
+[submodule "public/MazeEngine"]
+	path = public/MazeEngine
+	url = git@github.com:ldyeax/MazeEngine.git
