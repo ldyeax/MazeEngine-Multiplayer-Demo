@@ -71,7 +71,7 @@ const startSocketIO = function () {
 startSocketIO();
 
 // Start Socket App
-gameCache.start = function (maze) {
+gameCache.start = function (Scene, maze) {
 	if (gameCache.socket) {
 
 		// Insert Map into the cache
