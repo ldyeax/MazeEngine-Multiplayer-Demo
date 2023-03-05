@@ -139,7 +139,6 @@ tinyLib.modal = function (data) {
 
                 $("<div>", { class: "modal-header" }).append(
                     $("<h5>", { class: "modal-title" }).text(data.title),
-                    $("<button>", { type: "button", class: "btn-close", "data-bs-dismiss": "modal" })
                 ),
 
                 $("<div>", { class: "modal-body" }).append(data.body),
