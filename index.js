@@ -61,5 +61,5 @@ error_page(app);
 
 // Start Server
 server.listen(port, () => {
-	console.log(`Test app listening on port ${port}`);
+	console.log(`Maze App listening on port ${port}`);
 });
