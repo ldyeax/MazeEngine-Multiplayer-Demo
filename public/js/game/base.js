@@ -7,7 +7,7 @@ gameCache.game = function (Scene, maze) {
 		id: 'start_game',
 
 		title: 'Maze Game',
-		dialog: 'modal-lg modal-dialog-centered',
+		dialog: 'modal-lg modal-dialog-centered prevent-select',
 
 		body: $('<center>').append(
 			$('<h3>').text('Welcome to Maze!'),
