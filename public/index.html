@@ -3,17 +3,38 @@
 
 	<meta charset="utf-8">
 	<title>Maze</title>
-
-	<script src="./socket.io/socket.io.js"></script>
 	<script> 
 
 		var socket; 
-		
-		try {
-			socket = io(`${location.protocol}//${location.hostname}:3001`);
-		} catch (err) {
-			socket = null;
-		}
+		const startSocketIO = function() {
+			try {
+
+				const script = document.createElement('script');
+				document.head.appendChild(script);
+				
+				script.onload = function() { 
+
+					try {
+						socket = io(`${location.protocol}//${location.hostname}:3001`); 
+					} catch (err) {
+						socket = null;
+						console.error(err);
+					}
+
+
+				};
+
+				script.onerror = function(err) { console.error(err); };
+				script.async = true;
+				script.src = `${location.protocol}//${location.hostname}:3001/socket.io/socket.io.js`;
+			
+			} catch (err) {
+				socket = null;
+				console.error(err);
+			}
+		};
+
+		startSocketIO();
 
 	</script>
 
