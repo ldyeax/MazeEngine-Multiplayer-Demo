@@ -6,7 +6,7 @@ const path = require('path');
 const nunjucks = require('nunjucks');
 const error_page = require('./error');
 const getUserIP = require('@tinypudding/puddy-lib/http/userIP');
-eval(fs.readFileSync(path.join(__dirname, './public/cdnconfig.js')));
+eval(fs.readFileSync(path.join(__dirname, './public/cdnconfig.js'), 'utf-8'));
 
 // Prepare Node App
 const app = express();
@@ -14,7 +14,7 @@ const server = http.createServer(app);
 const port = 3001;
 
 // Nunjucks
-nunjucks.configure([path.join(__dirname, './views'), puddyTemplatePath], {
+nunjucks.configure([path.join(__dirname, './views')], {
     autoescape: true,
     express: app
 });
@@ -73,7 +73,7 @@ app.get('/tiny-test', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.render(path.join(__dirname, './private/index.html'));
+    return res.render('index', { cdn: tinyCDN });
 });
 
 // Static Files
