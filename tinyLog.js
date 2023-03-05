@@ -1,5 +1,5 @@
-const moment = require('moment-timezone');
-module.exports = function (msg, name, name2) {
+import moment from 'moment-timezone';
+const tinyLog = function (msg, name, name2) {
 
 	const now = moment().format('MM/DD/YYYY HH:mm:ss');
 
@@ -14,3 +14,5 @@ module.exports = function (msg, name, name2) {
 	}
 
 };
+
+export { tinyLog };
