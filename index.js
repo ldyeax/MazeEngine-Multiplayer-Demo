@@ -50,27 +50,16 @@ app.use(helmet.referrerPolicy());
 app.use(helmet.xssFilter());
 
 // Socket IO
+const gameCache = { user: {}, online: 0 };
 const {
 	Server
 } = require('socket.io');
 const io = new Server(server);
-
-// Test Socket IO
-io.on('connection', (socket) => {
-	console.log('a user connected on the tiny pudding! :3');
-	console.log('User ID: ' + socket.id);
-
-	socket.on('disconnect', () => {
-		console.log('user disconnected from the tiny pudding! :3');
-		console.log('User ID: ' + socket.id);
-	});
-});
-
-// Static Files
+io.on('connection', require('./multiplayer')(gameCache));
 app.use(express.static(path.join(__dirname, './public')));
 error_page(app);
 
 // Start Server
 server.listen(port, () => {
-	console.log(`Test app listening on port ${port}`);
+	console.log(`Maze App listening on port ${port}`);
 });
