@@ -15,6 +15,15 @@ const startSocketIO = function () {
 				console.error(err);
 			}
 
+			// client-side
+			gameCache.socket.on('connect', () => {
+				console.log(`[socket] [${gameCache.socket.id}] Connected!`);
+			});
+			
+			gameCache.socket.on('disconnect', () => {
+				console.log(`[socket] Disconnected!`);
+			});
+
 		};
 
 		script.onerror = function (err) { console.error(err); };
