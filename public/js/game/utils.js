@@ -1,15 +1,15 @@
-var tinyLog = function (name, name2) {
+var tinyLog = function (msg, name, name2) {
 
 	const now = moment().format();
 
 	if (typeof name === 'string') {
 		if (typeof name2 === 'string') {
-			return `[${now}] [${name}] [${name2}] `;
+			return `[${now}] [${name}] [${name2}] ${msg}`;
 		} else {
-			return `[${now}] [${name}] `;
+			return `[${now}] [${name}]  ${msg}`;
 		}
 	} else {
-		return `[${now}] `;
+		return `[${now}]  ${msg}`;
 	}
 
 };

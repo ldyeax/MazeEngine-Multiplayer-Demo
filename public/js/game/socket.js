@@ -21,12 +21,12 @@ const startSocketIO = function () {
 
 				// Exist Cells
 				if (Array.isArray(gameCache.seed)) {
-					console.log('[socket] [' + gameCache.socket.id + '] Map is being uploaded!');
+					console.log(tinyLog('Map is being uploaded!', 'socket', gameCache.socket.id));
 					gameCache.socket.emit('maze-map-sender', gameCache.seed, function (complete) {
 						if (complete) {
-							console.log('[socket] [' + gameCache.socket.id + '] Map Upload Complete!');
+							console.log(tinyLog('Map Upload Complete!', 'socket', gameCache.socket.id));
 						} else {
-							console.log('[socket] [' + gameCache.socket.id + '] Map Upload Failed!');
+							console.log(tinyLog('Map Upload Failed!', 'socket', gameCache.socket.id));
 						}
 					});
 				}
@@ -47,14 +47,14 @@ const startSocketIO = function () {
 			gameCache.socket.on('connect', () => {
 
 				// Welcome
-				console.log(`[socket] [${gameCache.socket.id}] Connected!`);
+				console.log(tinyLog(`Connected!`, 'socket', gameCache.socket.id));
 				senderMap();
 
 			});
 
 			// Disconnected
 			gameCache.socket.on('disconnect', () => {
-				console.log(`[socket] Disconnected!`);
+				console.log(tinyLog(`Disconnected!`, 'socket'));
 			});
 
 		};
@@ -76,9 +76,9 @@ gameCache.start = function (Scene, maze) {
 
 		// Insert Map into the cache
 		gameCache.seed = clone(maze.seed);
-		console.log(`[game] [map] The map seed is ${maze.seed.join('')}`);
-		console.log(`[game] [map] Width ${maze.seedSize.width}`);
-		console.log(`[game] [map] Height ${maze.seedSize.height}`);
+		console.log(tinyLog(`The map seed is ${maze.seed.join('')}`, 'game', 'map'));
+		console.log(tinyLog(`Width ${maze.seedSize.width}`, 'game', 'map'));
+		console.log(tinyLog(`Height ${maze.seedSize.height}`, 'game', 'map'));
 
 	}
 };
