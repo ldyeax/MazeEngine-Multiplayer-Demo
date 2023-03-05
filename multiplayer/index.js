@@ -25,7 +25,6 @@ module.exports = function (cache) {
 
 		// Receive Map
 		socket.on('maze-map-sender', (cells, fn) => {
-			console.log(cells);
 			if(Array.isArray(cells)) {
 				cache.user[socket.id].map = cells;
 				console.log('[socket] [' + socket.id + '] Map from the user is downloaded!');

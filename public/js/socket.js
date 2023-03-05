@@ -20,9 +20,9 @@ const startSocketIO = function () {
 			const senderMap = function () {
 
 				// Exist Cells
-				if (Array.isArray(gameCache.cells)) {
+				if (Array.isArray(gameCache.seed)) {
 					console.log('[socket] [' + gameCache.socket.id + '] Map is being uploaded!');
-					gameCache.socket.emit('maze-map-sender', gameCache.cells, function (complete) {
+					gameCache.socket.emit('maze-map-sender', gameCache.seed, function (complete) {
 						if (complete) {
 							console.log('[socket] [' + gameCache.socket.id + '] Map Upload Complete!');
 						} else {
@@ -68,7 +68,8 @@ gameCache.start = function (maze) {
 	if (gameCache.socket) {
 
 		// Insert Map into the cache
-		gameCache.cells = clone(maze.cells);
+		gameCache.seed = clone(maze.seed);
+		console.log(`[game] The map seed is ${maze.seed.join('')}`);
 
 	}
 };
