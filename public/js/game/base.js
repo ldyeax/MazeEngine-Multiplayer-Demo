@@ -1,4 +1,4 @@
-$.LoadingOverlay('show', {background: 'rgba(255,255,255, 0.5)'});
+$.LoadingOverlay('show', {background: 'rgba(255,255,255, 0.8)'});
 gameCache.game = function (Scene, maze) {
 
 	$.LoadingOverlay('hide');
@@ -17,7 +17,7 @@ gameCache.game = function (Scene, maze) {
 			$('<button>', { class: 'btn btn-primary' }).text('Start Game').click(async function() {
 				
 				$('#start_game').modal('hide');
-				$.LoadingOverlay('show', {background: 'rgba(0,0,0, 0.5)'});
+				$.LoadingOverlay('show', {background: 'rgba(255,255,255, 0.8)'});
 
 				await maze.loadAssets();
 				maze.start($('#canvas')[0]);
