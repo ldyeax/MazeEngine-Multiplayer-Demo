@@ -49,6 +49,7 @@ function mazeAsciiArt(cells) {
  * @returns {Cell[][]}
  */
 export default function generateMaze(width, height) {
+	const seedGenerator = [];
 	width = parseInt(Math.abs(width));
 	height = parseInt(Math.abs(height));
 	if (isNaN(width) || isNaN(height) || width < 1 || height < 1) {
@@ -172,6 +173,7 @@ export default function generateMaze(width, height) {
 				continue;
 			}
 			let direction = Math.floor(Math.random() * 4);
+			seedGenerator.push(direction);
 			switch (direction) {
 				case 0:
 					if (tryConnectCells(y, x, y, x - 1)) {
@@ -220,5 +222,5 @@ export default function generateMaze(width, height) {
 		}
 	}
 
-	return ret;
+	return {ret, seed: seedGenerator };
 };

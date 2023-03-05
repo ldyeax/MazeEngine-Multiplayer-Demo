@@ -14,7 +14,9 @@ export default class Maze extends MazeObject {
 		let width = this.width = mazeEngine.width = args.width;
 		let height = this.height = mazeEngine.height = args.height;
 
-		mazeEngine.cells = this.cells = generateMaze(width, height);
+		const mazeData = generateMaze(width, height);
+		mazeEngine.cells = this.cells = mazeData.ret;
+		mazeEngine.seed = this.seed = mazeData.seed;
 
 		mazeEngine.ceilingMazeObject = this.ceilingMazeObject = mazeEngine.instantiate(Ceiling);
 		mazeEngine.wallsMazeObject = this.wallsMazeObject = mazeEngine.instantiate(Walls);
