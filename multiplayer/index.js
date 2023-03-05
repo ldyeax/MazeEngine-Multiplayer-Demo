@@ -1,5 +1,5 @@
-const tinyLog = require('../tinyLog');
-module.exports = function (cache) {
+import { tinyLog } from '../tinyLog.js';
+const multiSender = function (cache) {
     return function (socket) {
 
         // Add User
@@ -42,3 +42,5 @@ module.exports = function (cache) {
 
     };
 };
+
+export { multiSender };

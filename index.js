@@ -1,13 +1,21 @@
 // Node.js code thanks to Tiny Jasmini
 
 // Modules
-const tinyLog = require('./tinyLog');
-const express = require('express');
-const http = require('http');
-const path = require('path');
-const nunjucks = require('nunjucks');
-const error_page = require('./error');
-const getUserIP = require('@tinypudding/puddy-lib/http/userIP');
+import express from 'express';
+import * as http from 'http';
+import * as path from 'path';
+import nunjucks from 'nunjucks';
+import { Server } from 'socket.io';
+
+import helmet from 'helmet';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import { tinyLog } from './tinyLog.js';
+import { error_page } from './error.js';
+import { multiSender } from './multiplayer/index.js';
 
 // Prepare Node App
 const app = express();
@@ -22,18 +30,7 @@ nunjucks.configure([path.join(__dirname, './views')], {
 
 app.set('view engine', 'nunjucks');
 
-// Validator
-app.use(function (req, _, next) {
-	// Get User IP
-	req.ip = getUserIP(req, {
-		isFirebase: false
-	});
-	// Complete
-	next();
-});
-
 // Helmet Protection
-const helmet = require('helmet');
 //app.use(helmet.contentSecurityPolicy());
 app.use(helmet.crossOriginEmbedderPolicy());
 app.use(helmet.crossOriginOpenerPolicy());
@@ -52,11 +49,8 @@ app.use(helmet.xssFilter());
 
 // Socket IO
 const gameCache = { user: {}, online: 0 };
-const {
-	Server
-} = require('socket.io');
 const io = new Server(server);
-io.on('connection', require('./multiplayer')(gameCache));
+io.on('connection', multiSender(gameCache));
 app.use(express.static(path.join(__dirname, './public')));
 error_page(app);
 
