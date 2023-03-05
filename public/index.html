@@ -5,12 +5,12 @@
 	<title>Maze</title>
 
 	<script src="./socket.io/socket.io.js"></script>
-	<script src="./cdnconfig.js"></script>
 	<script> 
 
 		var socket; 
+		
 		try {
-			socket = io(tinyCDN['cdn-apache2']);
+			socket = io(`${location.protocol}//${location.hostname}:3001`);
 		} catch (err) {
 			socket = null;
 		}

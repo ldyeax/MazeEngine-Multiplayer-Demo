@@ -1,12 +1,10 @@
 // Modules
 const express = require('express');
-const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const nunjucks = require('nunjucks');
 const error_page = require('./error');
 const getUserIP = require('@tinypudding/puddy-lib/http/userIP');
-eval(fs.readFileSync(path.join(__dirname, './public/cdnconfig.js'), 'utf-8'));
 
 // Prepare Node App
 const app = express();
@@ -70,10 +68,6 @@ io.on('connection', (socket) => {
 // Test node Page
 app.get('/tiny-test', (req, res) => {
     res.send('<h1>Tiny Hello world. :3</h1>');
-});
-
-app.get('/', (req, res) => {
-    return res.render('index', { cdn: tinyCDN });
 });
 
 // Static Files
