@@ -181,7 +181,7 @@ export default function generateMaze(width, height, seed) {
 			if(Array.isArray(seed)) {
 				direction = seed[countGenerator];
 			} else {
-				direction = Math.floor(Math.random() * 4)
+				direction = Math.floor(Math.random() * 4);
 			}
 
 			seedGenerator.push(direction);
