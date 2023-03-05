@@ -20,7 +20,8 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('user disconnected from the tiny pudding! :3');
-      });
+        console.log('User ID: ' + socket.id);
+    });
 
 });
 
