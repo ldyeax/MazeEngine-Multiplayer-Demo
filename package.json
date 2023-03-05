@@ -16,13 +16,14 @@
   "bugs": {
     "url": "https://github.com/ldyeax/maze/issues"
   },
-  "type": "module",
   "homepage": "https://github.com/ldyeax/maze#readme",
   "_moduleAliases": {
+    "@root": ".",
     "@mazeEngine": "public/MazeEngine/engine"
   },
   "dependencies": {
     "@tinypudding/puddy-lib": "^1.1.40",
+    "esm": "^3.2.25",
     "express": "^4.18.2",
     "helmet": "^6.0.1",
     "lodash": "^4.17.21",
