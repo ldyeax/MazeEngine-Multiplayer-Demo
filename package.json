@@ -1,0 +1,24 @@
+{
+  "name": "jimmmaze",
+  "version": "1.0.0",
+  "description": "Windows 98 inspired maze game for web browsers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ldyeax/maze.git"
+  },
+  "author": "ldyeax",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ldyeax/maze/issues"
+  },
+  "homepage": "https://github.com/ldyeax/maze#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
+    "socket.io": "^4.6.1"
+  }
+}
