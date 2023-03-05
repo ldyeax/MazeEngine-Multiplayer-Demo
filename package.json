@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/ldyeax/maze/issues"
   },
-  "homepage": "https://github.com/ldyeax/maze#readme"
+  "homepage": "https://github.com/ldyeax/maze#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
