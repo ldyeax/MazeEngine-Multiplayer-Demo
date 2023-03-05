@@ -9,7 +9,7 @@ var tinyLog = function (msg, name, name2) {
 			return `[${now}] [${name}]  ${msg}`;
 		}
 	} else {
-		return `[${now}]  ${msg}`;
+		return `[${now}] ${msg}`;
 	}
 
 };
