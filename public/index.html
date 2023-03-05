@@ -5,8 +5,16 @@
 
 		<meta charset="utf-8">
 		<title>Maze</title>
+		<script src="./js/game/utils.js"></script>
+		<script src="./js/moment-with-locales.js"></script>
+		<script src="./js/moment-timezone-with-data.js"></script>
 		<script src="./js/clone.js"></script>
-		<script src="./js/socket.js"></script>
+		<script src="./js/jquery-3.6.3.min.js"></script>
+		<script src="./js/loadingoverlay.min.js"></script>
+		<script src="./js/bootstrap.bundle.min.js"></script>
+		<script src="./js/tinyLib2.js"></script>
+		<script src="./js/game/socket.js"></script>
+		<script src="./js/game/base.js"></script>
 
 		<script type=importmap>
 		{
@@ -26,32 +34,12 @@
 		}
 		</script>
 
-		<style>
-			html {	
-				margin: 0 0 0 0;
-				padding: 0 0 0 0;
-				overflow: hidden;
-			}
-			body {
-				background-color: black;
-				margin: 0 0 0 0;
-				padding: 0 0 0 0;
-				overflow: hidden;
-			}
-			html, body {
-				width: 100%;
-				height: 100%;
-				min-height: 100%;
-				overflow: hidden;
-			}
-			canvas {
-				width: 100%;
-				height: 100%;
-				margin: 0 0 0 0;
-				padding: 0 0 0 0;
-				image-rendering: pixelated !important;
-			}
-		</style>
+		<link rel="preload" href="./css/bootstrap.min.css" as="style">
+		<link rel="preload" href="./css/dark.css" as="style">
+		<link rel="preload" href="./css/game/base.css" as="style">
+		<link rel="stylesheet" href="./css/bootstrap.min.css">
+		<link rel="stylesheet" href="./css/dark.css">
+		<link rel="stylesheet" href="./css/game/base.css">
 
 	</head>
 
@@ -65,10 +53,7 @@
 			window.THREE = THREE;
 
 			let maze = new mazeEngine();
-			await maze.loadAssets();
-			maze.start(document.getElementById("canvas"));
-			maze.instantiate(Scene);
-			gameCache.start(maze);
+			gameCache.game(Scene, maze);
 		</script>
 
 	</body>

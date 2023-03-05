@@ -1,3 +1,4 @@
+const tinyLog = require('../tinyLog');
 module.exports = function (cache) {
     return function (socket) {
 
@@ -8,14 +9,14 @@ module.exports = function (cache) {
 		socket.emit('online-users', cache.online);
 
         // Connect Detected
-        console.log('[socket] [' + socket.id + '] a user connected on the tiny pudding! :3');
-        console.log('[socket] [' + socket.id + '] user ip ' + cache.user[socket.id].ip);
+        console.log(tinyLog('a user connected on the tiny pudding! :3', 'socket', socket.id));
+        console.log(tinyLog('user ip ' + cache.user[socket.id].ip, 'socket', socket.id));
 
         // Disconnection
         socket.on('disconnect', () => {
 
             // Console message
-            console.log('[socket] [' + socket.id + '] user disconnected from the tiny pudding! :c');
+            console.log(tinyLog('user disconnected from the tiny pudding! :c', 'socket', socket.id));
 
             // Destroy User Data
             cache.online--;
@@ -32,7 +33,7 @@ module.exports = function (cache) {
 		socket.on('maze-map-sender', (cells, fn) => {
 			if(Array.isArray(cells)) {
 				cache.user[socket.id].map = cells;
-				console.log('[socket] [' + socket.id + '] Map from the user is downloaded!');
+				console.log(tinyLog('Map from the user is downloaded!', 'socket', socket.id));
 				fn(true);
 			} else {
 				fn(false);
