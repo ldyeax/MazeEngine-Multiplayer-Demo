@@ -8,6 +8,16 @@ const app = express();
 const server = http.createServer(app);
 const port = 3001;
 
+// Socket IO
+const { Server } = require('socket.io');
+const io = new Server(server);
+
+// Test Socket IO
+io.on('connection', (socket) => {
+    console.log('a user connected with pudding! :3');
+    console.log('User ID: ' + socket.id);
+});
+
 // Test node Page
 app.get('/tiny-test', (req, res) => {
     res.send('<h1>Tiny Hello world. :3</h1>');
