@@ -76,9 +76,12 @@ gameCache.start = function (Scene, maze) {
 
 		// Insert Map into the cache
 		gameCache.seed = clone(maze.seed);
+		gameCache.map = clone(maze.mapData);
+
+		console.log(gameCache.map.asciiArt);
 		console.log(tinyLog(`The map seed is ${maze.seed.join('')}`, 'game', 'map'));
-		console.log(tinyLog(`Width ${maze.seedSize.width}`, 'game', 'map'));
-		console.log(tinyLog(`Height ${maze.seedSize.height}`, 'game', 'map'));
+		console.log(tinyLog(`Width ${maze.mapData.width}`, 'game', 'map'));
+		console.log(tinyLog(`Height ${maze.mapData.height}`, 'game', 'map'));
 
 	}
 };
