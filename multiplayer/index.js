@@ -1,5 +1,5 @@
 import { tinyLog } from '../tinyLog.js';
-import generateMaze from '@mazeEngine/generatemaze.js';
+import generateMaze from 'engine/generatemaze.js';
 const multiSender = function (cache) {
     return function (socket) {
 

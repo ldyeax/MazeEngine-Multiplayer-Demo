@@ -19,7 +19,7 @@
   "homepage": "https://github.com/ldyeax/maze#readme",
   "_moduleAliases": {
     "@root": ".",
-    "@mazeEngine": "public/MazeEngine/engine"
+    "engine": "public/MazeEngine/engine/"
   },
   "dependencies": {
     "@tinypudding/puddy-lib": "^1.1.40",
