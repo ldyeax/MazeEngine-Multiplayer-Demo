@@ -21,6 +21,7 @@ gameCache.game = function (Scene, Maze, maze) {
 
 				let width = 15;
 				let height = 15;
+				
 				// Maze must come first
 				maze.instantiate(Maze, {width: width, height: height});
 
@@ -30,7 +31,13 @@ gameCache.game = function (Scene, Maze, maze) {
 
 				$.LoadingOverlay('hide');
 			
-				return gameCache.start(Scene, maze);
+				// Insert Map into the cache
+				gameCache.seed = clone(maze.seed);
+
+				console.log(maze.asciiArt);
+				console.log(tinyLog(`The map seed is ${maze.seed.join('')}`, 'game', 'map'));
+				console.log(tinyLog(`Width ${maze.width}`, 'game', 'map'));
+				console.log(tinyLog(`Height ${maze.height}`, 'game', 'map'));
 
 			})
 		]

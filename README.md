@@ -1,14 +1,10 @@
 # maze
 Windows 98 inspired maze game for web browsers
 
-## Router
+## Utils
 
-Apache2 Home Page
 ```
-/public/index.html
-```
-
-Nodejs Home Page
-```
-/private/index.html
+git submodule init
+git submodule update
+git submodule foreach git pull origin main
 ```
