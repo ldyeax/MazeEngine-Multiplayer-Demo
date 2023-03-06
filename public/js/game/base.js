@@ -14,6 +14,7 @@ gameCache.game = function (Scene, Maze, maze, objs) {
 		// Insert Game Instance
 		gameCache.instance = maze;
 		gameCache.objs = objs;
+		gameCache.scene = Scene;
 
 		// Log
 		console.log(maze.asciiArt);

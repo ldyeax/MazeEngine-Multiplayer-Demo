@@ -2,6 +2,7 @@
 var gameCache = { online: null, players: {} };
 function startSocketIO(mazeEngine, MarbleTest) {
 	try {
+
 		const script = document.createElement('script');
 		document.head.appendChild(script);
 
@@ -47,8 +48,17 @@ function startSocketIO(mazeEngine, MarbleTest) {
 					gameCache.socket.emit('player-position', { x: gameCache.instance.player.position.x, y: gameCache.instance.player.position.y, z: gameCache.instance.player.position.z });
 					gameCache.socket.emit('player-scale', { x: gameCache.instance.player.scale.x, y: gameCache.instance.player.scale.y, z: gameCache.instance.player.scale.z });
 					gameCache.socket.emit('player-rotation', { x: gameCache.instance.player.rotation.x, y: gameCache.instance.player.rotation.y, z: gameCache.instance.player.rotation.z });
+					gameCache.socket.emit('player-rotate-speed', gameCache.instance.player.rotateSpeed);
 				}
 			}, 60);
+
+			// Move Extra Player
+			const convertExtraPlayerPosition = function(position) {
+				for(const item in position) {
+					position[item] = position[item] / 100;
+				}
+				return position;
+			};
 
 			// Start Player
 			const startPlayerModel = function (id) {
@@ -90,6 +100,12 @@ function startSocketIO(mazeEngine, MarbleTest) {
 				}
 			});
 
+			gameCache.socket.on('player-rotate-speed', obj => {
+				if (gameCache.players[obj.id]) {
+					gameCache.players[obj.id].rotateSpeed = obj.data;
+				}
+			});
+
 			gameCache.socket.on('player-join', id => {
 				if (!gameCache.players[id]) { gameCache.players[id] = {}; }
 				startPlayerModel(id);
@@ -100,24 +116,28 @@ function startSocketIO(mazeEngine, MarbleTest) {
 			});
 
 			gameCache.socket.on('player-leave', id => {
+				
 				if (gameCache.players[id]) { 
 					if (gameCache.players[id].mazeObject) {
 						gameCache.players[id].mazeObject.destroy();
 					}
 					delete gameCache.players[id]; 
 				}
+
 				if (id === gameCache.room) {
 					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
 					location.reload();
 				}
+
 			});
 		};
 
 		script.onerror = function (err) { console.error(err); };
 		script.async = true;
 		script.src = `${location.protocol}//${location.hostname}:3001/socket.io/socket.io.js`;
+
 	} catch (err) {
 		gameCache.socket = null;
 		console.error(err);
 	}
-}
+};

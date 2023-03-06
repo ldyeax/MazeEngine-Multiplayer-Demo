@@ -92,6 +92,13 @@ const multiSender = function (cache, io) {
 			}
 		});
 
+		socket.on('player-rotate-speed', (speed) => {
+			if (typeof speed === 'number') {
+				cache.user[socket.id].rotateSpeed = speed;
+				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
+			}
+		});
+
 		// Disconnection
 		socket.on('disconnect', () => {
 
