@@ -1,5 +1,5 @@
 $.LoadingOverlay('show', { background: 'rgba(255,255,255, 0.8)' });
-gameCache.game = function (Scene, Maze, maze) {
+gameCache.game = function (Scene, Maze, maze, objs) {
 
 	// Start Game
 	const loadGame = async function () {
@@ -13,6 +13,7 @@ gameCache.game = function (Scene, Maze, maze) {
 
 		// Insert Game Instance
 		gameCache.instance = maze;
+		gameCache.objs = objs;
 
 		// Log
 		console.log(maze.asciiArt);

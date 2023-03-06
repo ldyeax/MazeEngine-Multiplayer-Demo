@@ -51,7 +51,20 @@ const startSocketIO = function () {
 				}
 			}, 60);
 
-			// gameCache.instance
+			// Start Player
+			const startPlayerModel = function (id) {
+				const player = gameCache.players[id];
+				if (gameCache.objs && player.position && gameCache.instance) {
+
+					if (player) { 
+						//const cords = { x: player.position.x, y: player.position.y };
+						//player.model = new gameCache.objs.Marble(gameCache.instance); 
+						//gameCache.instance.instantiate(gameCache.objs.Marble, cords);
+						//gameCache.instance.instantiate(player.model, cords);
+					}
+
+				} else { setTimeout(function () { startPlayerModel(id); }, 300) }
+			};
 
 			// Receive Player
 			gameCache.socket.on('player-position', obj => {
@@ -74,6 +87,7 @@ const startSocketIO = function () {
 
 			gameCache.socket.on('player-join', id => {
 				if (!gameCache.players[id]) { gameCache.players[id] = {}; }
+				startPlayerModel(id);
 			});
 
 			gameCache.socket.on('player-username', data => {

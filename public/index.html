@@ -50,10 +50,11 @@
 			import MazeEngine from './MazeEngine/engine/mazeengine.js';
 			import Maze from "mazeobject/maze.js";
 			import Scene from "./scene/multiplayertestscene1.js";
+			import Marble from "engine/mazeobject/marbletest.js";
 			let maze = new MazeEngine({
 				pathRoot: "/MazeEngine"
 			});
-			gameCache.game(Scene, Maze, maze);
+			gameCache.game(Scene, Maze, maze, { Marble });
 		</script>
 
 	</body>
