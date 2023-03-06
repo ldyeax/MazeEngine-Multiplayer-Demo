@@ -1,7 +1,8 @@
 // Create Game Cache
-var gameCache = { online: null, players: {} };
+var tinyGame = { online: null, players: {}, cache: {} };
 function startSocketIO(mazeEngine, MarbleTest) {
 	try {
+
 		const script = document.createElement('script');
 		document.head.appendChild(script);
 
@@ -9,33 +10,33 @@ function startSocketIO(mazeEngine, MarbleTest) {
 
 			// Start Socket
 			try {
-				gameCache.socket = io(`${location.protocol}//${location.hostname}:3001`);
+				tinyGame.socket = io(`${location.protocol}//${location.hostname}:3001`);
 			} catch (err) {
-				gameCache.socket = null;
+				tinyGame.socket = null;
 				console.error(err);
 			}
 
 			// Online Users
-			gameCache.socket.on('online-users', (online) => {
+			tinyGame.socket.on('online-users', (online) => {
 				if (typeof online === 'number') {
-					gameCache.online = online;
+					tinyGame.online = online;
 				}
 			});
 
 			// Connection Start
-			gameCache.socket.on('connect', () => {
-				console.log(tinyLog(`Connected!`, 'socket', gameCache.socket.id));
-				if (gameCache.isMultiplayer) {
+			tinyGame.socket.on('connect', () => {
+				console.log(tinyLog(`Connected!`, 'socket', tinyGame.socket.id));
+				if (tinyGame.isMultiplayer) {
 					$.LoadingOverlay('hide');
 				}
 			});
 
 			// Disconnected
-			gameCache.socket.on('disconnect', () => {
+			tinyGame.socket.on('disconnect', () => {
 				console.log(tinyLog(`Disconnected!`, 'socket'));
-				if (gameCache.isMultiplayer) {
+				if (tinyGame.isMultiplayer) {
 					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
-					if (gameCache.isHost) {
+					if (tinyGame.isHost) {
 						location.reload();
 					}
 				}
@@ -43,81 +44,125 @@ function startSocketIO(mazeEngine, MarbleTest) {
 
 			// Send Player
 			setInterval(function () {
-				if (gameCache.instance && gameCache.instance.player) {
-					gameCache.socket.emit('player-position', { x: gameCache.instance.player.position.x, y: gameCache.instance.player.position.y, z: gameCache.instance.player.position.z });
-					gameCache.socket.emit('player-scale', { x: gameCache.instance.player.scale.x, y: gameCache.instance.player.scale.y, z: gameCache.instance.player.scale.z });
-					gameCache.socket.emit('player-rotation', { x: gameCache.instance.player.rotation.x, y: gameCache.instance.player.rotation.y, z: gameCache.instance.player.rotation.z });
+				if (tinyGame.instance && tinyGame.instance.player) {
+
+					const position = { x: tinyGame.instance.player.position.x, y: tinyGame.instance.player.position.y, z: tinyGame.instance.player.position.z };
+					const scale = { x: tinyGame.instance.player.scale.x, y: tinyGame.instance.player.scale.y, z: tinyGame.instance.player.scale.z };
+					const rotation = { x: tinyGame.instance.player.rotation.x, y: tinyGame.instance.player.rotation.y, z: tinyGame.instance.player.rotation.z };
+					const speedRotate = tinyGame.instance.player.rotateSpeed;
+
+					const validatorHash = { position: objHash(position), scale: objHash(scale), rotation: objHash(rotation), speedRotate: objHash(speedRotate), };
+
+					if (!tinyGame.cache.position || tinyGame.cache.position !== validatorHash.position) {
+						tinyGame.cache.position = validatorHash.position;
+						tinyGame.socket.emit('player-position', position);
+					}
+
+					if (!tinyGame.cache.scale || tinyGame.cache.scale !== validatorHash.scale) {
+						tinyGame.cache.scale = validatorHash.scale;
+						tinyGame.socket.emit('player-scale', scale);
+					}
+
+					if (!tinyGame.cache.rotation || tinyGame.cache.rotation !== validatorHash.rotation) {
+						tinyGame.cache.rotation = validatorHash.rotation;
+						tinyGame.socket.emit('player-rotation', rotation);
+					}
+
+					if (!tinyGame.cache.speedRotate || tinyGame.cache.speedRotate !== validatorHash.speedRotate) {
+						tinyGame.cache.speedRotate = validatorHash.speedRotate;
+						tinyGame.socket.emit('player-rotate-speed', speedRotate);
+					}
+
+
 				}
-			}, 60);
+			}, 0);
+
+			// Move Extra Player
+			const convertExtraPlayerPosition = function (position) {
+				for (const item in position) {
+					position[item] = position[item] / 100;
+				}
+				return position;
+			};
 
 			// Start Player
 			const startPlayerModel = function (id) {
-				const player = gameCache.players[id];
+				const player = tinyGame.players[id];
 
-				player.mazeObject = mazeEngine.instantiate(MarbleTest, {x:0,y:0});
+				player.mazeObject = mazeEngine.instantiate(MarbleTest, { x: 0, y: 0 });
 
-				// if (gameCache.objs && player.position && gameCache.instance) {
+				// if (tinyGame.objs && player.position && tinyGame.instance) {
 
 				// 	if (player) { 
 				// 		//const cords = { x: player.position.x, y: player.position.y };
-				// 		//player.model = new gameCache.objs.Marble(gameCache.instance); 
-				// 		//gameCache.instance.instantiate(gameCache.objs.Marble, cords);
-				// 		//gameCache.instance.instantiate(player.model, cords);
+				// 		//player.model = new tinyGame.objs.Marble(tinyGame.instance); 
+				// 		//tinyGame.instance.instantiate(tinyGame.objs.Marble, cords);
+				// 		//tinyGame.instance.instantiate(player.model, cords);
 				// 	}
 
 				// } else { setTimeout(function () { startPlayerModel(id); }, 300) }
 			};
 
 			// Receive Player
-			gameCache.socket.on('player-position', obj => {
-				if (gameCache.players[obj.id]) {
-					gameCache.players[obj.id].position = obj.data;
-					if (gameCache.players[obj.id].mazeObject) {
-						gameCache.players[obj.id].mazeObject.position.set(obj.data.x, obj.data.y, obj.data.z);
+			tinyGame.socket.on('player-position', obj => {
+				if (tinyGame.players[obj.id]) {
+					tinyGame.players[obj.id].position = obj.data;
+					if (tinyGame.players[obj.id].mazeObject) {
+						tinyGame.players[obj.id].mazeObject.position.set(obj.data.x, obj.data.y, obj.data.z);
 					}
 				}
 			});
 
-			gameCache.socket.on('player-scale', obj => {
-				if (gameCache.players[obj.id]) {
-					gameCache.players[obj.id].scale = obj.data;
+			tinyGame.socket.on('player-scale', obj => {
+				if (tinyGame.players[obj.id]) {
+					tinyGame.players[obj.id].scale = obj.data;
 				}
 			});
 
-			gameCache.socket.on('player-rotation', obj => {
-				if (gameCache.players[obj.id]) {
-					gameCache.players[obj.id].rotation = obj.data;
+			tinyGame.socket.on('player-rotation', obj => {
+				if (tinyGame.players[obj.id]) {
+					tinyGame.players[obj.id].rotation = obj.data;
 				}
 			});
 
-			gameCache.socket.on('player-join', id => {
-				if (!gameCache.players[id]) { gameCache.players[id] = {}; }
+			tinyGame.socket.on('player-rotate-speed', obj => {
+				if (tinyGame.players[obj.id]) {
+					tinyGame.players[obj.id].rotateSpeed = obj.data;
+				}
+			});
+
+			tinyGame.socket.on('player-join', id => {
+				if (!tinyGame.players[id]) { tinyGame.players[id] = {}; }
 				startPlayerModel(id);
 			});
 
-			gameCache.socket.on('player-username', data => {
-				if (gameCache.players[data.id]) { gameCache.players[data.id].username = data.username; }
+			tinyGame.socket.on('player-username', data => {
+				if (tinyGame.players[data.id]) { tinyGame.players[data.id].username = data.username; }
 			});
 
-			gameCache.socket.on('player-leave', id => {
-				if (gameCache.players[id]) { 
-					if (gameCache.players[id].mazeObject) {
-						gameCache.players[id].mazeObject.destroy();
+			tinyGame.socket.on('player-leave', id => {
+
+				if (tinyGame.players[id]) {
+					if (tinyGame.players[id].mazeObject) {
+						tinyGame.players[id].mazeObject.destroy();
 					}
-					delete gameCache.players[id]; 
+					delete tinyGame.players[id];
 				}
-				if (id === gameCache.room) {
+
+				if (id === tinyGame.room) {
 					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
 					location.reload();
 				}
+
 			});
 		};
 
 		script.onerror = function (err) { console.error(err); };
 		script.async = true;
 		script.src = `${location.protocol}//${location.hostname}:3001/socket.io/socket.io.js`;
+
 	} catch (err) {
-		gameCache.socket = null;
+		tinyGame.socket = null;
 		console.error(err);
 	}
-}
+};
