@@ -45,31 +45,41 @@ function startSocketIO(mazeEngine, MarbleTest) {
 			// Send Player
 			setInterval(function () {
 				if (tinyGame.instance && tinyGame.instance.player) {
-					
+
 					const position = { x: tinyGame.instance.player.position.x, y: tinyGame.instance.player.position.y, z: tinyGame.instance.player.position.z };
 					const scale = { x: tinyGame.instance.player.scale.x, y: tinyGame.instance.player.scale.y, z: tinyGame.instance.player.scale.z };
 					const rotation = { x: tinyGame.instance.player.rotation.x, y: tinyGame.instance.player.rotation.y, z: tinyGame.instance.player.rotation.z };
 					const speedRotate = tinyGame.instance.player.rotateSpeed;
 
-					tinyGame.cache.position = position;
-					tinyGame.socket.emit('player-position', position);
+					const validatorHash = { position: objHash(position), scale: objHash(scale), rotation: objHash(rotation), speedRotate: objHash(speedRotate), };
 
-					tinyGame.cache.scale = scale;
-					tinyGame.socket.emit('player-scale', scale);
-					
-					tinyGame.cache.rotation = rotation;
-					tinyGame.socket.emit('player-rotation', rotation);
+					if (!tinyGame.cache.position || tinyGame.cache.position !== validatorHash.position) {
+						tinyGame.cache.position = validatorHash.position;
+						tinyGame.socket.emit('player-position', position);
+					}
 
-					tinyGame.cache.speedRotate = speedRotate;
-					tinyGame.socket.emit('player-rotate-speed', speedRotate);
+					if (!tinyGame.cache.scale || tinyGame.cache.scale !== validatorHash.scale) {
+						tinyGame.cache.scale = validatorHash.scale;
+						tinyGame.socket.emit('player-scale', scale);
+					}
+
+					if (!tinyGame.cache.rotation || tinyGame.cache.rotation !== validatorHash.rotation) {
+						tinyGame.cache.rotation = validatorHash.rotation;
+						tinyGame.socket.emit('player-rotation', rotation);
+					}
+
+					if (!tinyGame.cache.speedRotate || tinyGame.cache.speedRotate !== validatorHash.speedRotate) {
+						tinyGame.cache.speedRotate = validatorHash.speedRotate;
+						tinyGame.socket.emit('player-rotate-speed', speedRotate);
+					}
 
 
 				}
 			}, 0);
 
 			// Move Extra Player
-			const convertExtraPlayerPosition = function(position) {
-				for(const item in position) {
+			const convertExtraPlayerPosition = function (position) {
+				for (const item in position) {
 					position[item] = position[item] / 100;
 				}
 				return position;
@@ -79,7 +89,7 @@ function startSocketIO(mazeEngine, MarbleTest) {
 			const startPlayerModel = function (id) {
 				const player = tinyGame.players[id];
 
-				player.mazeObject = mazeEngine.instantiate(MarbleTest, {x:0,y:0});
+				player.mazeObject = mazeEngine.instantiate(MarbleTest, { x: 0, y: 0 });
 
 				// if (tinyGame.objs && player.position && tinyGame.instance) {
 
@@ -131,12 +141,12 @@ function startSocketIO(mazeEngine, MarbleTest) {
 			});
 
 			tinyGame.socket.on('player-leave', id => {
-				
-				if (tinyGame.players[id]) { 
+
+				if (tinyGame.players[id]) {
 					if (tinyGame.players[id].mazeObject) {
 						tinyGame.players[id].mazeObject.destroy();
 					}
-					delete tinyGame.players[id]; 
+					delete tinyGame.players[id];
 				}
 
 				if (id === tinyGame.room) {
