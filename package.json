@@ -19,6 +19,7 @@
   "homepage": "https://github.com/ldyeax/maze#readme",
   "_moduleAliases": {
     "@root": ".",
+    "mazeobject": "public/MazeEngine/engine/mazeobject",
     "engine": "public/MazeEngine/engine/"
   },
   "dependencies": {

@@ -51,6 +51,8 @@ const startSocketIO = function () {
 				}
 			}, 60);
 
+			// gameCache.instance
+
 			// Receive Player
 			gameCache.socket.on('player-position', obj => {
 				if (gameCache.players[obj.id]) {
