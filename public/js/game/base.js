@@ -21,7 +21,7 @@ gameCache.game = function (Scene, Maze, maze) {
 		console.log(tinyLog(`Height ${maze.height}`, 'game', 'map'));
 
 		// GUI
-		gameCache.gui = { html: { base: $('<div>', { id: 'gui' }) } }
+		gameCache.gui = { html: { base: $('<div>', { id: 'gui', class: 'prevent-select' }) } }
 		$('body').prepend(gameCache.gui.html.base);
 
 		// Map
@@ -34,7 +34,7 @@ gameCache.game = function (Scene, Maze, maze) {
 			'background-color': '#252525',
 			'padding': '30px'
 		});
-		
+
 		gameCache.gui.html.base.append(gameCache.gui.html.map);
 		gameCache.gui.html.map.text(maze.asciiArt);
 
