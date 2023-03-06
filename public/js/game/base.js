@@ -25,7 +25,7 @@ gameCache.game = function (Scene, Maze, maze) {
 		$('body').prepend(gameCache.gui.html.base);
 
 		// Map
-		gameCache.gui.html.map = $('<div>', { id: 'map', style: 'white-space: pre;' }).css({
+		gameCache.gui.html.map = $('<div>', { id: 'map', class: 'd-none' }).css({
 			'white-space': 'pre',
 			'position': 'fixed',
 			'bottom': '100px',
