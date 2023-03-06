@@ -50,7 +50,7 @@ app.use(helmet.xssFilter());
 // Socket IO
 const gameCache = { user: {}, online: 0 };
 const io = new Server(server);
-io.on('connection', multiSender(gameCache));
+io.on('connection', multiSender(gameCache, io));
 app.use(express.static(path.join(__dirname, './public')));
 error_page(app);
 
