@@ -36,8 +36,8 @@ gameCache.game = function (Scene, Maze, maze) {
 			}
 
 			// Load Game
-			gameCache.socket.emit('request-map', {room_id: gameCache.room, username: username.substring(0, 30) }, (map) => {
-				if(map) {
+			gameCache.socket.emit('request-map', { id: gameCache.room, username: username.substring(0, 30) }, (map) => {
+				if (map) {
 					maze.instantiate(Maze, { width: map.width, height: map.height, seed: map.seed });
 					loadGame();
 				} else {
@@ -57,7 +57,7 @@ gameCache.game = function (Scene, Maze, maze) {
 
 	// ID
 	let yourID = '';
-	if(gameCache.socket && gameCache.socket.id) { yourID = gameCache.socket.id; }
+	if (gameCache.socket && gameCache.socket.id) { yourID = gameCache.socket.id; }
 
 	// Menu
 	$.LoadingOverlay('hide');

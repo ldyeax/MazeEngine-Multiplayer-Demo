@@ -74,9 +74,13 @@ const startSocketIO = function () {
 				if (!gameCache.players[id]) { gameCache.players[id] = {}; }
 			});
 
+			gameCache.socket.on('player-username', data => {
+				if (gameCache.players[data.id]) { gameCache.players[data.id].username = data.username; }
+			});
+
 			gameCache.socket.on('player-leave', id => {
 				if (gameCache.players[id]) { delete gameCache.players[id]; }
-				if(id === gameCache.room) {
+				if (id === gameCache.room) {
 					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
 					location.reload();
 				}

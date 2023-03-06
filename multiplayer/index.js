@@ -21,16 +21,25 @@ const multiSender = function (cache, io) {
 
 		// Request Map
 		socket.on('request-map', (data, fn) => {
-			data.id = data.id.substring(0, 200);
-			data.username = data.username.substring(0, 30);
-			if (typeof data.id === 'string' && cache.user[data.id]) {
+			if (typeof data.id === 'string' && typeof data.username === 'string' && cache.user[data.id]) {
+
+				// Validator
+				data.id = data.id.substring(0, 200);
+				data.username = data.username.substring(0, 30);
+
+				// Username
+				if (data.username.length < 1) {
+					data.username = '???';
+				}
 
 				// Size
 				const size = { height: 15, width: 15 };
 
 				// Username
-				if(!cache.user[socket.id].map) {
+				if (!cache.user[socket.id].map) {
 					cache.user[socket.id].username = data.username;
+					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
+					socket.emit('player-username', { username: data.username, id: socket.id });
 				}
 
 				// Create Map
@@ -84,7 +93,7 @@ const multiSender = function (cache, io) {
 
 			// Console message
 			console.log(tinyLog('user disconnected from the tiny pudding! :c', 'socket', socket.id));
-			if(cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-leave', socket.id); }
+			if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-leave', socket.id); }
 
 			// Destroy User Data
 			cache.online--;
