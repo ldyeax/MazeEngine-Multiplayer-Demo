@@ -1,8 +1,7 @@
 // Create Game Cache
 var gameCache = { online: null, players: {} };
-const startSocketIO = function () {
+function startSocketIO(mazeEngine, MarbleTest) {
 	try {
-
 		const script = document.createElement('script');
 		document.head.appendChild(script);
 
@@ -54,22 +53,28 @@ const startSocketIO = function () {
 			// Start Player
 			const startPlayerModel = function (id) {
 				const player = gameCache.players[id];
-				if (gameCache.objs && player.position && gameCache.instance) {
 
-					if (player) { 
-						//const cords = { x: player.position.x, y: player.position.y };
-						//player.model = new gameCache.objs.Marble(gameCache.instance); 
-						//gameCache.instance.instantiate(gameCache.objs.Marble, cords);
-						//gameCache.instance.instantiate(player.model, cords);
-					}
+				player.mazeObject = mazeEngine.instantiate(MarbleTest, {x:0,y:0});
 
-				} else { setTimeout(function () { startPlayerModel(id); }, 300) }
+				// if (gameCache.objs && player.position && gameCache.instance) {
+
+				// 	if (player) { 
+				// 		//const cords = { x: player.position.x, y: player.position.y };
+				// 		//player.model = new gameCache.objs.Marble(gameCache.instance); 
+				// 		//gameCache.instance.instantiate(gameCache.objs.Marble, cords);
+				// 		//gameCache.instance.instantiate(player.model, cords);
+				// 	}
+
+				// } else { setTimeout(function () { startPlayerModel(id); }, 300) }
 			};
 
 			// Receive Player
 			gameCache.socket.on('player-position', obj => {
 				if (gameCache.players[obj.id]) {
 					gameCache.players[obj.id].position = obj.data;
+					if (gameCache.players[obj.id].mazeObject) {
+						gameCache.players[obj.id].mazeObject.position.set(obj.data.x, obj.data.y, obj.data.z);
+					}
 				}
 			});
 
@@ -95,22 +100,24 @@ const startSocketIO = function () {
 			});
 
 			gameCache.socket.on('player-leave', id => {
-				if (gameCache.players[id]) { delete gameCache.players[id]; }
+				if (gameCache.players[id]) { 
+					if (gameCache.players[id].mazeObject) {
+						gameCache.players[id].mazeObject.destroy();
+					}
+					delete gameCache.players[id]; 
+				}
 				if (id === gameCache.room) {
 					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
 					location.reload();
 				}
 			});
-
 		};
 
 		script.onerror = function (err) { console.error(err); };
 		script.async = true;
 		script.src = `${location.protocol}//${location.hostname}:3001/socket.io/socket.io.js`;
-
 	} catch (err) {
 		gameCache.socket = null;
 		console.error(err);
 	}
-};
-startSocketIO();
+}
