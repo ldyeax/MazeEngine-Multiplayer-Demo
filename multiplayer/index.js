@@ -32,6 +32,8 @@ const multiSender = function (cache, io) {
 				// Create Map
 				if (!cache.user[id].map && id === socket.id) {
 					cache.user[socket.id].map = generateMaze(size.width, size.height);
+				} else {
+					cache.user[socket.id].map = cache.user[id].map;
 				}
 
 				// Exist Map
