@@ -4,6 +4,7 @@ gameCache.game = function (Scene, Maze, maze) {
 	// Start Game
 	const loadGame = async function () {
 
+		// Maze
 		await maze.loadAssets();
 		maze.start($('#canvas')[0]);
 		maze.instantiate(Scene);
@@ -13,10 +14,29 @@ gameCache.game = function (Scene, Maze, maze) {
 		// Insert Game Instance
 		gameCache.instance = maze;
 
+		// Log
 		console.log(maze.asciiArt);
 		console.log(tinyLog(`The map seed is ${maze.seed.join('')}`, 'game', 'map'));
 		console.log(tinyLog(`Width ${maze.width}`, 'game', 'map'));
 		console.log(tinyLog(`Height ${maze.height}`, 'game', 'map'));
+
+		// GUI
+		gameCache.gui = { html: { base: $('<div>', { id: 'gui' }) } }
+		$('body').prepend(gameCache.gui.html.base);
+
+		// Map
+		gameCache.gui.html.map = $('<div>', { id: 'map', style: 'white-space: pre;' }).css({
+			'white-space': 'pre',
+			'position': 'fixed',
+			'bottom': '100px',
+			'zoom': 0.4,
+			'right': '100px',
+			'background-color': '#252525',
+			'padding': '30px'
+		});
+		
+		gameCache.gui.html.base.append(gameCache.gui.html.map);
+		gameCache.gui.html.map.text(maze.asciiArt);
 
 	};
 	const startGame = function (isMultiplayer = false, isHost = false) {
@@ -37,7 +57,7 @@ gameCache.game = function (Scene, Maze, maze) {
 
 			// Save Username
 			username = username.substring(0, 30);
-			if(localStorage) {
+			if (localStorage) {
 				localStorage.setItem('username', username);
 			}
 
