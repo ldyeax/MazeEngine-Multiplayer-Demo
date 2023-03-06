@@ -1,5 +1,5 @@
 $.LoadingOverlay('show', { background: 'rgba(255,255,255, 0.8)' });
-gameCache.game = function (Scene, Maze, maze, objs) {
+tinyGame.game = function (Scene, Maze, maze, objs) {
 
 	// Start Game
 	const loadGame = async function () {
@@ -12,9 +12,9 @@ gameCache.game = function (Scene, Maze, maze, objs) {
 		$.LoadingOverlay('hide');
 
 		// Insert Game Instance
-		gameCache.instance = maze;
-		gameCache.objs = objs;
-		gameCache.scene = Scene;
+		tinyGame.instance = maze;
+		tinyGame.objs = objs;
+		tinyGame.scene = Scene;
 
 		// Log
 		console.log(maze.asciiArt);
@@ -23,11 +23,11 @@ gameCache.game = function (Scene, Maze, maze, objs) {
 		console.log(tinyLog(`Height ${maze.height}`, 'game', 'map'));
 
 		// GUI
-		gameCache.gui = { html: { base: $('<div>', { id: 'gui', class: 'prevent-select' }) } }
-		$('body').prepend(gameCache.gui.html.base);
+		tinyGame.gui = { html: { base: $('<div>', { id: 'gui', class: 'prevent-select' }) } }
+		$('body').prepend(tinyGame.gui.html.base);
 
 		// Map
-		gameCache.gui.html.map = $('<div>', { id: 'map', class: 'd-none' }).css({
+		tinyGame.gui.html.map = $('<div>', { id: 'map', class: 'd-none' }).css({
 			'white-space': 'pre',
 			'position': 'fixed',
 			'bottom': '100px',
@@ -37,8 +37,8 @@ gameCache.game = function (Scene, Maze, maze, objs) {
 			'padding': '30px'
 		});
 
-		gameCache.gui.html.base.append(gameCache.gui.html.map);
-		gameCache.gui.html.map.text(maze.asciiArt);
+		tinyGame.gui.html.base.append(tinyGame.gui.html.map);
+		tinyGame.gui.html.map.text(maze.asciiArt);
 
 	};
 	const startGame = function (isMultiplayer = false, isHost = false) {
@@ -52,9 +52,9 @@ gameCache.game = function (Scene, Maze, maze, objs) {
 		if (isMultiplayer) {
 
 			// Host
-			gameCache.isMultiplayer = true;
-			if (isHost) { gameCache.room = gameCache.socket.id; gameCache.isHost = true; } else {
-				gameCache.room = room_id.substring(0, 200); gameCache.isHost = false;
+			tinyGame.isMultiplayer = true;
+			if (isHost) { tinyGame.room = tinyGame.socket.id; tinyGame.isHost = true; } else {
+				tinyGame.room = room_id.substring(0, 200); tinyGame.isHost = false;
 			}
 
 			// Save Username
@@ -64,7 +64,7 @@ gameCache.game = function (Scene, Maze, maze, objs) {
 			}
 
 			// Load Game
-			gameCache.socket.emit('request-map', { id: gameCache.room, username: username }, (map) => {
+			tinyGame.socket.emit('request-map', { id: tinyGame.room, username: username }, (map) => {
 				if (map) {
 					maze.instantiate(Maze, { width: map.width, height: map.height, seed: map.seed });
 					loadGame();
@@ -85,7 +85,7 @@ gameCache.game = function (Scene, Maze, maze, objs) {
 
 	// ID
 	let yourID = '';
-	if (gameCache.socket && gameCache.socket.id) { yourID = gameCache.socket.id; }
+	if (tinyGame.socket && tinyGame.socket.id) { yourID = tinyGame.socket.id; }
 
 	// Menu
 	$.LoadingOverlay('hide');

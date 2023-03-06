@@ -48,9 +48,9 @@ app.use(helmet.referrerPolicy());
 app.use(helmet.xssFilter());
 
 // Socket IO
-const gameCache = { user: {}, online: 0 };
+const tinyGame = { user: {}, online: 0 };
 const io = new Server(server);
-io.on('connection', multiSender(gameCache, io));
+io.on('connection', multiSender(tinyGame, io));
 app.use(express.static(path.join(__dirname, './public')));
 error_page(app);
 
