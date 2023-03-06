@@ -22,7 +22,7 @@ const multiSender = function (cache, io) {
 		// Request Map
 		socket.on('request-map', (data, fn) => {
 			data.id = data.id.substring(0, 200);
-			data.username = data.username.substring(0, 60);
+			data.username = data.username.substring(0, 30);
 			if (typeof data.id === 'string' && cache.user[data.id]) {
 
 				// Size
