@@ -38,8 +38,6 @@ const multiSender = function (cache, io) {
 				// Username
 				if (!cache.user[socket.id].map) {
 					cache.user[socket.id].username = data.username;
-					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
-					socket.emit('player-username', { username: data.username, id: socket.id });
 				}
 
 				// Create Map
@@ -51,11 +49,17 @@ const multiSender = function (cache, io) {
 
 				// Exist Map
 				if (cache.user[data.id].map) {
+					
 					if (cache.user[socket.id].room) { socket.leave(`game-${cache.user[socket.id].room}`); }
 					cache.user[socket.id].room = data.id;
 					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
+					
 					socket.join(`game-${data.id}`);
 					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
+
+					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
+					socket.emit('player-username', { username: data.username, id: socket.id });
+				
 				}
 
 				// Nope
