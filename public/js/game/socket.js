@@ -51,6 +51,21 @@ const startSocketIO = function () {
 				}
 			}, 60);
 
+			// Start Player
+			const startPlayerModel = function (id) {
+				const player = gameCache.players[id];
+				if (gameCache.objs && player.position && gameCache.instance) {
+
+					if (player) { 
+						//const cords = { x: player.position.x, y: player.position.y };
+						//player.model = new gameCache.objs.Marble(gameCache.instance); 
+						//gameCache.instance.instantiate(gameCache.objs.Marble, cords);
+						//gameCache.instance.instantiate(player.model, cords);
+					}
+
+				} else { setTimeout(function () { startPlayerModel(id); }, 300) }
+			};
+
 			// Receive Player
 			gameCache.socket.on('player-position', obj => {
 				if (gameCache.players[obj.id]) {
@@ -72,11 +87,16 @@ const startSocketIO = function () {
 
 			gameCache.socket.on('player-join', id => {
 				if (!gameCache.players[id]) { gameCache.players[id] = {}; }
+				startPlayerModel(id);
+			});
+
+			gameCache.socket.on('player-username', data => {
+				if (gameCache.players[data.id]) { gameCache.players[data.id].username = data.username; }
 			});
 
 			gameCache.socket.on('player-leave', id => {
 				if (gameCache.players[id]) { delete gameCache.players[id]; }
-				if(id === gameCache.room) {
+				if (id === gameCache.room) {
 					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
 					location.reload();
 				}

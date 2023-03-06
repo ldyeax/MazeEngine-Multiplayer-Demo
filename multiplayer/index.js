@@ -20,29 +20,46 @@ const multiSender = function (cache, io) {
 		console.log(tinyLog('user ip ' + cache.user[socket.id].ip, 'socket', socket.id));
 
 		// Request Map
-		socket.on('request-map', (id, fn) => {
-			if (typeof id === 'string' && cache.user[id]) {
+		socket.on('request-map', (data, fn) => {
+			if (typeof data.id === 'string' && typeof data.username === 'string' && cache.user[data.id]) {
 
-				// Fix ID
-				id = id.substring(0, 200);
+				// Validator
+				data.id = data.id.substring(0, 200);
+				data.username = data.username.substring(0, 30);
+
+				// Username
+				if (data.username.length < 1) {
+					data.username = '???';
+				}
 
 				// Size
 				const size = { height: 15, width: 15 };
 
+				// Username
+				if (!cache.user[socket.id].map) {
+					cache.user[socket.id].username = data.username;
+				}
+
 				// Create Map
-				if (!cache.user[id].map && id === socket.id) {
+				if (!cache.user[data.id].map && data.id === socket.id) {
 					cache.user[socket.id].map = generateMaze(size.width, size.height);
 				} else {
-					cache.user[socket.id].map = cache.user[id].map;
+					cache.user[socket.id].map = cache.user[data.id].map;
 				}
 
 				// Exist Map
-				if (cache.user[id].map) {
+				if (cache.user[data.id].map) {
+					
 					if (cache.user[socket.id].room) { socket.leave(`game-${cache.user[socket.id].room}`); }
-					cache.user[socket.id].room = id;
+					cache.user[socket.id].room = data.id;
 					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
-					socket.join(`game-${id}`);
+					
+					socket.join(`game-${data.id}`);
 					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
+
+					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
+					socket.emit('player-username', { username: data.username, id: socket.id });
+				
 				}
 
 				// Nope
@@ -80,7 +97,7 @@ const multiSender = function (cache, io) {
 
 			// Console message
 			console.log(tinyLog('user disconnected from the tiny pudding! :c', 'socket', socket.id));
-			if(cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-leave', socket.id); }
+			if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-leave', socket.id); }
 
 			// Destroy User Data
 			cache.online--;
