@@ -19,9 +19,9 @@ export default class TestScene1 extends MazeObject {
 
 		let scene = mazeEngine.scene;
 
-		// let ambientLight = new THREE.AmbientLight(0xFFFFFF);
-		// ambientLight.intensity = 1;
-		// scene.add(ambientLight);
+		let ambientLight = new THREE.AmbientLight(0xFFFFFF);
+		ambientLight.intensity = 1;
+		scene.add(ambientLight);
 
 		mazeEngine.instantiate(CellLightManager);
 
