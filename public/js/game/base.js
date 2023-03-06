@@ -22,6 +22,7 @@ gameCache.game = function (Scene, Maze, maze) {
 	const startGame = function (isMultiplayer = false, isHost = false) {
 
 		const room_id = $('#room_id').val();
+		const username = $('#your_username').val();
 		$('#start_game').modal('hide');
 		$.LoadingOverlay('show', { background: 'rgba(255,255,255, 0.8)' });
 
@@ -35,7 +36,7 @@ gameCache.game = function (Scene, Maze, maze) {
 			}
 
 			// Load Game
-			gameCache.socket.emit('request-map', gameCache.room, (map) => {
+			gameCache.socket.emit('request-map', {room_id: gameCache.room, username }, (map) => {
 				if(map) {
 					maze.instantiate(Maze, { width: map.width, height: map.height, seed: map.seed });
 					loadGame();
@@ -71,6 +72,7 @@ gameCache.game = function (Scene, Maze, maze) {
 			$('<h3>').text('Welcome to Maze!'),
 			$('<center>').append(
 				$('<input>', { type: 'text', id: 'your_room_id', class: 'text-center form-control', readonly: true }).val(yourID),
+				$('<input>', { type: 'text', id: 'your_username', class: 'text-center form-control', placeholder: 'Insert your username here' }),
 				$('<input>', { type: 'text', id: 'room_id', class: 'text-center form-control', placeholder: 'Insert your friend player ID here' })
 			)
 		),

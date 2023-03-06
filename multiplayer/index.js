@@ -20,28 +20,26 @@ const multiSender = function (cache, io) {
 		console.log(tinyLog('user ip ' + cache.user[socket.id].ip, 'socket', socket.id));
 
 		// Request Map
-		socket.on('request-map', (id, fn) => {
-			if (typeof id === 'string' && cache.user[id]) {
-
-				// Fix ID
-				id = id.substring(0, 200);
+		socket.on('request-map', (data, fn) => {
+			data.id = data.id.substring(0, 200);
+			if (typeof data.id === 'string' && cache.user[data.id]) {
 
 				// Size
 				const size = { height: 15, width: 15 };
 
 				// Create Map
-				if (!cache.user[id].map && id === socket.id) {
+				if (!cache.user[data.id].map && data.id === socket.id) {
 					cache.user[socket.id].map = generateMaze(size.width, size.height);
 				} else {
-					cache.user[socket.id].map = cache.user[id].map;
+					cache.user[socket.id].map = cache.user[data.id].map;
 				}
 
 				// Exist Map
-				if (cache.user[id].map) {
+				if (cache.user[data.id].map) {
 					if (cache.user[socket.id].room) { socket.leave(`game-${cache.user[socket.id].room}`); }
-					cache.user[socket.id].room = id;
+					cache.user[socket.id].room = data.id;
 					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
-					socket.join(`game-${id}`);
+					socket.join(`game-${data.id}`);
 					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
 				}
 
