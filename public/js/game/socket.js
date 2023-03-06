@@ -1,5 +1,5 @@
 // Create Game Cache
-var gameCache = { online: null };
+var gameCache = { online: null, players: {} };
 const startSocketIO = function () {
 	try {
 
@@ -18,22 +18,68 @@ const startSocketIO = function () {
 
 			// Online Users
 			gameCache.socket.on('online-users', (online) => {
-				if(typeof online === 'number') {
+				if (typeof online === 'number') {
 					gameCache.online = online;
 				}
 			});
 
 			// Connection Start
 			gameCache.socket.on('connect', () => {
-
-				// Welcome
 				console.log(tinyLog(`Connected!`, 'socket', gameCache.socket.id));
-
+				if (gameCache.isMultiplayer) {
+					$.LoadingOverlay('hide');
+				}
 			});
 
 			// Disconnected
 			gameCache.socket.on('disconnect', () => {
 				console.log(tinyLog(`Disconnected!`, 'socket'));
+				if (gameCache.isMultiplayer) {
+					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
+					if (gameCache.isHost) {
+						location.reload();
+					}
+				}
+			});
+
+			// Send Player
+			setInterval(function () {
+				if (gameCache.instance && gameCache.instance.player) {
+					gameCache.socket.emit('player-position', { x: gameCache.instance.player.position.x, y: gameCache.instance.player.position.y, z: gameCache.instance.player.position.z });
+					gameCache.socket.emit('player-scale', { x: gameCache.instance.player.scale.x, y: gameCache.instance.player.scale.y, z: gameCache.instance.player.scale.z });
+					gameCache.socket.emit('player-rotation', { x: gameCache.instance.player.rotation.x, y: gameCache.instance.player.rotation.y, z: gameCache.instance.player.rotation.z });
+				}
+			}, 60);
+
+			// Receive Player
+			gameCache.socket.on('player-position', obj => {
+				if (gameCache.players[obj.id]) {
+					gameCache.players[obj.id].position = obj.data;
+				}
+			});
+
+			gameCache.socket.on('player-scale', obj => {
+				if (gameCache.players[obj.id]) {
+					gameCache.players[obj.id].scale = obj.data;
+				}
+			});
+
+			gameCache.socket.on('player-rotation', obj => {
+				if (gameCache.players[obj.id]) {
+					gameCache.players[obj.id].rotation = obj.data;
+				}
+			});
+
+			gameCache.socket.on('player-join', id => {
+				if (!gameCache.players[id]) { gameCache.players[id] = {}; }
+			});
+
+			gameCache.socket.on('player-leave', id => {
+				if (gameCache.players[id]) { delete gameCache.players[id]; }
+				if(id === gameCache.room) {
+					$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
+					location.reload();
+				}
 			});
 
 		};
