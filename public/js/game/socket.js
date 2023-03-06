@@ -1,5 +1,5 @@
 // Create Game Cache
-var gameCache = { online: null, players: {} };
+var gameCache = { online: null, players: {}, cache: {} };
 function startSocketIO(mazeEngine, MarbleTest) {
 	try {
 
@@ -45,12 +45,19 @@ function startSocketIO(mazeEngine, MarbleTest) {
 			// Send Player
 			setInterval(function () {
 				if (gameCache.instance && gameCache.instance.player) {
-					gameCache.socket.emit('player-position', { x: gameCache.instance.player.position.x, y: gameCache.instance.player.position.y, z: gameCache.instance.player.position.z });
-					gameCache.socket.emit('player-scale', { x: gameCache.instance.player.scale.x, y: gameCache.instance.player.scale.y, z: gameCache.instance.player.scale.z });
-					gameCache.socket.emit('player-rotation', { x: gameCache.instance.player.rotation.x, y: gameCache.instance.player.rotation.y, z: gameCache.instance.player.rotation.z });
-					gameCache.socket.emit('player-rotate-speed', gameCache.instance.player.rotateSpeed);
+					
+					const position = { x: gameCache.instance.player.position.x, y: gameCache.instance.player.position.y, z: gameCache.instance.player.position.z };
+					const scale = { x: gameCache.instance.player.scale.x, y: gameCache.instance.player.scale.y, z: gameCache.instance.player.scale.z };
+					const rotation = { x: gameCache.instance.player.rotation.x, y: gameCache.instance.player.rotation.y, z: gameCache.instance.player.rotation.z };
+					const speedRotate = gameCache.instance.player.rotateSpeed;
+
+					gameCache.socket.emit('player-position', position);
+					gameCache.socket.emit('player-scale', scale);
+					gameCache.socket.emit('player-rotation', rotation);
+					gameCache.socket.emit('player-rotate-speed', speedRotate);
+
 				}
-			}, 60);
+			}, 0);
 
 			// Move Extra Player
 			const convertExtraPlayerPosition = function(position) {
