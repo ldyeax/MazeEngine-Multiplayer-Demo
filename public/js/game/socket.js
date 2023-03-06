@@ -51,10 +51,18 @@ function startSocketIO(mazeEngine, MarbleTest) {
 					const rotation = { x: tinyGame.instance.player.rotation.x, y: tinyGame.instance.player.rotation.y, z: tinyGame.instance.player.rotation.z };
 					const speedRotate = tinyGame.instance.player.rotateSpeed;
 
+					tinyGame.cache.position = position;
 					tinyGame.socket.emit('player-position', position);
+
+					tinyGame.cache.scale = scale;
 					tinyGame.socket.emit('player-scale', scale);
+					
+					tinyGame.cache.rotation = rotation;
 					tinyGame.socket.emit('player-rotation', rotation);
+
+					tinyGame.cache.speedRotate = speedRotate;
 					tinyGame.socket.emit('player-rotate-speed', speedRotate);
+
 
 				}
 			}, 0);
