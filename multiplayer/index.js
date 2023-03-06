@@ -22,10 +22,16 @@ const multiSender = function (cache, io) {
 		// Request Map
 		socket.on('request-map', (data, fn) => {
 			data.id = data.id.substring(0, 200);
+			data.username = data.username.substring(0, 60);
 			if (typeof data.id === 'string' && cache.user[data.id]) {
 
 				// Size
 				const size = { height: 15, width: 15 };
+
+				// Username
+				if(!cache.user[socket.id].map) {
+					cache.user[socket.id].username = data.username;
+				}
 
 				// Create Map
 				if (!cache.user[data.id].map && data.id === socket.id) {
