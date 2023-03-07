@@ -103,44 +103,53 @@ const multiSender = function (cache, io) {
 			}
 		});
 
-		// Player
+		// Player Sender Data
+		const playerSender = {
 
-		// Position
-		socket.on('player-position', (obj) => {
-			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-				cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) {
-					io.to(cache.user[socket.id].room).emit('player-position', {
-						id: socket.id,
-						data: cache.user[socket.id].position
-					});
+			// Position
+			position: (obj) => {
+				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
+					cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
+					if (cache.user[socket.id].room) {
+						io.to(cache.user[socket.id].room).emit('player-position', {
+							id: socket.id,
+							data: cache.user[socket.id].position
+						});
+					}
 				}
-			}
-		});
+			},
 
-		// Scale
-		socket.on('player-scale', (obj) => {
-			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-				cache.user[socket.id].scale = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-scale', { id: socket.id, data: cache.user[socket.id].scale }); }
-			}
-		});
+			// Scale
+			scale: (obj) => {
+				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
+					cache.user[socket.id].scale = { x: obj.x, y: obj.y, z: obj.z };
+					if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-scale', { id: socket.id, data: cache.user[socket.id].scale }); }
+				}
+			},
 
-		// Rotation
-		socket.on('player-rotation', (obj) => {
-			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-				cache.user[socket.id].rotation = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotation', { id: socket.id, data: cache.user[socket.id].rotation }); }
-			}
-		});
+			// Rotation
+			rotation: (obj) => {
+				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
+					cache.user[socket.id].rotation = { x: obj.x, y: obj.y, z: obj.z };
+					if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotation', { id: socket.id, data: cache.user[socket.id].rotation }); }
+				}
+			},
 
-		// Speed Rotate
-		socket.on('player-rotate-speed', (speed) => {
-			if (typeof speed === 'number') {
-				cache.user[socket.id].rotateSpeed = speed;
-				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
-			}
-		});
+			// Speed Rotate
+			speed: (speed) => {
+				if (typeof speed === 'number') {
+					cache.user[socket.id].rotateSpeed = speed;
+					if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
+				}
+			},
+
+		};
+
+		// Player Socket
+		socket.on('player-position', playerSender.position);
+		socket.on('player-scale', playerSender.scale);
+		socket.on('player-rotation', playerSender.rotation);
+		socket.on('player-rotate-speed', playerSender.speed);
 
 		// Disconnection
 		socket.on('disconnect', () => {
