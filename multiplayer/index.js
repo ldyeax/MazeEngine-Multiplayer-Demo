@@ -14,7 +14,7 @@ const multiSender = function (cache, io) {
 			scale: { x: 0, y: 0, z: 0 },
 			rotateSpeed: 1
 		};
-		
+
 		socket.broadcast.emit('online-users', cache.online);
 		socket.emit('online-users', cache.online);
 
@@ -64,7 +64,6 @@ const multiSender = function (cache, io) {
 						socket.leave(`game-${cache.user[socket.id].room}`);
 					}
 					cache.user[socket.id].room = data.id;
-
 
 					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
 
@@ -144,21 +143,6 @@ const multiSender = function (cache, io) {
 			socket.broadcast.emit('online-users', cache.online);
 			socket.emit('online-users', cache.online);
 
-		});
-
-		// Player list
-		socket.on("request-players", () => {
-			if (cache.user[socket.id].room) {
-				const players = Object.keys(cache.user);
-				players.forEach((player) => {
-					if (cache.user[player].room == cache.user[socket.id].room) {
-						socket.emit('player-join', player);
-						socket.emit('player-position', { id: player, data: cache.user[player].position });
-						socket.emit('player-scale', { id: player, data: cache.user[player].scale });
-						socket.emit('player-rotation', { id: player, data: cache.user[player].rotation });
-					}
-				});
-			}
 		});
 
 	};
