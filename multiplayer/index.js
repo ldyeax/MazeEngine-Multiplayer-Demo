@@ -158,7 +158,7 @@ const multiSender = function (cache, io) {
 			// Remove User
 			if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-leave', socket.id); }
 			if (cache.user[socket.id].roomId && cache.user[cache.user[socket.id].roomId]) {
-				const index = myArray.indexOf(socket.id);
+				const index = cache.user[cache.user[socket.id].roomId].indexOf(socket.id);
 				cache.user[cache.user[socket.id].roomId].splice(index, 1);
 			}
 
