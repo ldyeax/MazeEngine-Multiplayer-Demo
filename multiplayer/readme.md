@@ -13,7 +13,7 @@ This value will only be sent to the player who owns this socket.
 socket.emit('player-join', socket.id);
 ```
 
-This value will be sent to all players in the room, except for the player who owns this socket.
+This value will be sent to all players in entire server (all rooms), except for the player who owns this socket.
 ```js
 socket.broadcast.emit('online-users', cache.online);
 ```
