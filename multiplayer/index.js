@@ -1,5 +1,6 @@
 import { tinyLog } from '../tinyLog.js';
 import generateMaze from 'engine/generatemaze.js';
+import { getCfg } from '../config';
 
 // An instance of multiSender exists per player
 const multiSender = function (cache, io) {
@@ -37,7 +38,7 @@ const multiSender = function (cache, io) {
 				}
 
 				// Map Size
-				const size = { height: 15, width: 15 };
+				const size = getCfg.map();
 
 				// Username
 				if (!cache.user[socket.id].map) {
