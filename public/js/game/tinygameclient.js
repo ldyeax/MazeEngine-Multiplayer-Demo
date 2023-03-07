@@ -47,12 +47,12 @@ export default class TinyGameClient {
 	#loadSocketIO() {
 		return new Promise((resolve) => {
 			SocketIO.loadScript().then(() => {
-				console.log('loadScript complete');
+				console.log(tinyLog('loadScript complete', 'socket'));
 				this.socketIO = new SocketIO();
 				this.socketIO.load().then(() => {
 					this.socket = this.socketIO.socket;
 					this.socketID = this.socket.id;
-					console.log(`Socket ID: ${this.socketID}`)
+					console.log(tinyLog(this.socketID, 'socket', 'id'))
 					this.#socketIOLoaded = true;
 					resolve();
 				})
@@ -155,7 +155,7 @@ export default class TinyGameClient {
 
 	#startGame1(isHost) {
 
-		console.log(`#startGame1 ${isHost ? 'host' : 'client'}`);
+		console.log(tinyLog(`#startGame1 ${isHost ? 'host' : 'client'}`, 'game'));
 
 		$('#start_game').modal('hide');
 
@@ -167,13 +167,13 @@ export default class TinyGameClient {
 		this.isHost = isHost
 		if (isHost) {
 			this.roomID = this.socketID;
-			console.log(`is host: setting roomID to socketID ${this.roomID}`);
+			console.log(tinyLog(`is host: setting roomID to socketID ${this.roomID}`, 'game'));
 		} else {
 			this.roomID = $('#room_id').val().substring(0, 200);
-			console.log(`is client: setting roomID to ${this.roomID}`);
+			console.log(tinyLog(`is client: setting roomID to ${this.roomID}`, 'game'));
 		}
 
-		console.log('emitting request-map');
+		console.log(tinyLog('emitting request-map', 'socket'));
 
 		this.socket.emit('request-map', {
 			id: this.roomID,
@@ -190,7 +190,7 @@ export default class TinyGameClient {
 
 	#startGame2(map) {
 
-		console.log('#startGame2');
+		console.log(tinyLog('#startGame2', 'game'));
 		this.mazeEngine.start($('#canvas')[0]);
 
 		let scene = this.scene = this.mazeEngine.instantiate(TinyMultiplayerScene, {
