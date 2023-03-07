@@ -107,7 +107,9 @@ const multiSender = function (cache, io) {
 				for (const item in cache.user[roomId].players) {
 					socket.emit('player-join', { id: cache.user[roomId].players[item], request: true }, () => {
 						for (const value in playerSender) {
-							playerSender[value](socket.id)({ x: cache.user[roomId].players[item][value].x, y: cache.user[roomId].players[item][value].y, z: cache.user[roomId].players[item][value].z });
+							if (cache.user[roomId].players[item][value]) {
+								playerSender[value](socket.id)({ x: cache.user[roomId].players[item][value].x, y: cache.user[roomId].players[item][value].y, z: cache.user[roomId].players[item][value].z });
+							}
 						}
 					});
 				}
