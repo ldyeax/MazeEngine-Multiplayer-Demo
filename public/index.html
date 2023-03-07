@@ -14,8 +14,6 @@
 		<script src="/js/loadingoverlay.min.js"></script>
 		<script src="/js/bootstrap.bundle.min.js"></script>
 		<script src="/js/tinyLib2.js"></script>
-		<script src="/js/game/socket.js"></script>
-		<script src="/js/game/base.js"></script>
 
 		<script type=importmap>
 		{
@@ -30,7 +28,9 @@
 				"mazeobject/": "./MazeEngine/engine/mazeobject/",
 				"mazescript/": "./MazeEngine/engine/mazescript/",
 				"shader/": "./MazeEngine/engine/shader/",
-				"test/": "./MazeEngine/engine/test/"
+				"test/": "./MazeEngine/engine/test/",
+
+				"game/": "./js/game/"
 			}
 		}
 		</script>
@@ -48,15 +48,16 @@
 			
 		<canvas id="canvas"></canvas>
 		<script type="module">
-			import MazeEngine from './MazeEngine/engine/mazeengine.js';
-			import Maze from "mazeobject/maze.js";
-			import Scene from "./scene/multiplayertestscene1.js";
-			import Marble from "./mazeobject/multiplayermarble.js";
-			let maze = new MazeEngine({
-				pathRoot: "/MazeEngine"
+			import TinyGameClient from "game/tinygameclient.js";
+
+			let tinyGame = window.tinyGame = new TinyGameClient({
+				pathRoot: "/MazeEngine",
 			});
-			tinyGame.game(Scene, Maze, maze, { Marble });
-			startSocketIO(maze, Marble);
+			console.log("constructed tinyGame");
+			await tinyGame.load();
+			console.log("tinyGame loaded");
+			tinyGame.game();
+			console.log("called tinyGame.game()");
 		</script>
 
 	</body>

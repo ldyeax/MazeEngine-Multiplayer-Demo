@@ -1,11 +1,19 @@
 import { tinyLog } from '../tinyLog.js';
 import generateMaze from 'engine/generatemaze.js';
+
+// An instance of multiSender exists per player
 const multiSender = function (cache, io) {
 	return function (socket) {
 
 		// Add User
 		cache.online++;
-		cache.user[socket.id] = { ip: socket.handshake.address };
+		cache.user[socket.id] = { 
+			ip: socket.handshake.address,
+			position: {x: 0, y: 0, z: 0},
+			rotation: {x: 0, y: 0, z: 0},
+			scale: {x: 0, y: 0, z: 0},
+			rotateSpeed: 1
+		};
 		socket.broadcast.emit('online-users', cache.online);
 		socket.emit('online-users', cache.online);
 
@@ -21,6 +29,7 @@ const multiSender = function (cache, io) {
 
 		// Request Map
 		socket.on('request-map', (data, fn) => {
+			console.log(tinyLog('request-map', 'socket', socket.id));
 			if (typeof data.id === 'string' && typeof data.username === 'string' && cache.user[data.id]) {
 
 				// Validator
@@ -50,8 +59,12 @@ const multiSender = function (cache, io) {
 				// Exist Map
 				if (cache.user[data.id].map) {
 					
-					if (cache.user[socket.id].room) { socket.leave(`game-${cache.user[socket.id].room}`); }
+					if (cache.user[socket.id].room) { 
+						socket.leave(`game-${cache.user[socket.id].room}`); 
+					}
 					cache.user[socket.id].room = data.id;
+
+
 					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
 					
 					socket.join(`game-${data.id}`);
@@ -67,6 +80,16 @@ const multiSender = function (cache, io) {
 					fn(null);
 				}
 
+			} else {
+				if (typeof data.id !== 'string') {
+					console.log(tinyLog('request-map: data.id is not a string', 'socket', socket.id));
+				}
+				if (typeof data.username !== 'string') {
+					console.log(tinyLog('request-map: data.username is not a string', 'socket', socket.id));
+				}
+				if (!cache.user[data.id]) {
+					console.log(tinyLog(`request-map: cache.user[${data.id}] does not exist`, 'socket', socket.id));
+				}
 			}
 		});
 
@@ -74,7 +97,15 @@ const multiSender = function (cache, io) {
 		socket.on('player-position', (obj) => {
 			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
 				cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-position', { id: socket.id, data: cache.user[socket.id].position }); }
+				if (cache.user[socket.id].room) { 
+					io.to(cache.user[socket.id].room)
+						.emit('player-position', 
+							{ 
+								id: socket.id, 
+								data: cache.user[socket.id].position 
+							}
+						); 
+				}
 			}
 		});
 
@@ -115,6 +146,21 @@ const multiSender = function (cache, io) {
 			socket.broadcast.emit('online-users', cache.online);
 			socket.emit('online-users', cache.online);
 
+		});
+
+		// Player list
+		socket.on("request-players", () => {
+			if (cache.user[socket.id].room) {
+				const players = Object.keys(cache.user);
+				players.forEach((player) => {
+					if (cache.user[player].room == cache.user[socket.id].room) {
+						socket.emit('player-join', player);
+						socket.emit('player-position', { id: player, data: cache.user[player].position });
+						socket.emit('player-scale', { id: player, data: cache.user[player].scale });
+						socket.emit('player-rotation', { id: player, data: cache.user[player].rotation });
+					}
+				});
+			}
 		});
 
 	};

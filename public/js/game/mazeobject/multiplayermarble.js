@@ -1,5 +1,7 @@
 import MazeObject from "engine/mazeobject.js";
 import * as THREE from "three";
+import CellAlphaReceiver from "mazescript/cellalphareceiver.js";
+import CellLightSource from "mazescript/celllightsource.js";
 export default class MultiPlayerMarbleTest extends MazeObject {
 	/**
 	 * @param {MazeEngine} mazeEngine 
@@ -11,13 +13,16 @@ export default class MultiPlayerMarbleTest extends MazeObject {
 
 		this.root = new THREE.Group();
 
-		this.root.add(mazeEngine.gltfAssets.marbletest.getRoot());
+		if (!args.isPlayer) {
+			let mesh = mazeEngine.gltfAssets.marbletest.getRoot();
+			mesh.scale.set(3,3,3);
+			mesh.rotation.set(0, Math.PI, 0);
+			this.root.add(mesh);
+		}
 
-		let pointLight = new THREE.PointLight(0xffffff, 1, 0, 2);
-		pointLight.position.set(0, 0, 0);
-		this.root.add(pointLight);
+		//this.addScript(CellAlphaReceiver);
+		this.addScript(CellLightSource);
 
-		this.scale = new THREE.Vector3(3, 3, 3);
 		window["MultiPlayerMarbleTest"+this.id] = this;
 	}
 	update() {
