@@ -157,8 +157,14 @@ const multiSender = function (cache, io) {
 			// Remove User
 			if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-leave', socket.id); }
 			if (cache.user[socket.id].roomId && cache.user[cache.user[socket.id].roomId]) {
-				const index = cache.user[cache.user[socket.id].roomId].indexOf(socket.id);
-				cache.user[cache.user[socket.id].roomId].splice(index, 1);
+
+				const roomId = cache.user[socket.id].roomId;
+
+				if (Array.isArray(cache.user[roomId].players)) {
+					const index = cache.user[roomId].indexOf(socket.id);
+					cache.user[roomId].players.splice(index, 1);
+				}
+
 			}
 
 			// Destroy User Data
