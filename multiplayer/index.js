@@ -59,7 +59,6 @@ const multiSender = function (cache, io) {
 
 				} else {
 					cache.user[socket.id].map = cache.user[data.id].map;
-					cache.user[socket.id].roomId = data.id;
 					cache.user[data.id].players.push(socket.id);
 				}
 
@@ -67,11 +66,11 @@ const multiSender = function (cache, io) {
 				if (cache.user[data.id].map) {
 
 					// Add to Room
-					if (cache.user[socket.id].room) { socket.leave(`game-${cache.user[socket.id].room}`); }
-					cache.user[socket.id].room = data.id;
+					if (cache.user[socket.id].roomId) { socket.leave(`game-${cache.user[socket.id].roomId}`); }
+					cache.user[socket.id].roomId = data.id;
 
 					// Send Join Emit
-					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
+					io.to(cache.user[socket.id].roomId).emit('player-join', socket.id);
 					socket.join(`game-${data.id}`);
 
 					// Return Message
@@ -108,8 +107,8 @@ const multiSender = function (cache, io) {
 			position: (obj) => {
 				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
 					cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
-					if (cache.user[socket.id].room) {
-						io.to(cache.user[socket.id].room).emit('player-position', {
+					if (cache.user[socket.id].roomId) {
+						io.to(cache.user[socket.id].roomId).emit('player-position', {
 							id: socket.id,
 							data: cache.user[socket.id].position
 						});
@@ -121,7 +120,7 @@ const multiSender = function (cache, io) {
 			scale: (obj) => {
 				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
 					cache.user[socket.id].scale = { x: obj.x, y: obj.y, z: obj.z };
-					if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-scale', { id: socket.id, data: cache.user[socket.id].scale }); }
+					if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-scale', { id: socket.id, data: cache.user[socket.id].scale }); }
 				}
 			},
 
@@ -129,7 +128,7 @@ const multiSender = function (cache, io) {
 			rotation: (obj) => {
 				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
 					cache.user[socket.id].rotation = { x: obj.x, y: obj.y, z: obj.z };
-					if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotation', { id: socket.id, data: cache.user[socket.id].rotation }); }
+					if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-rotation', { id: socket.id, data: cache.user[socket.id].rotation }); }
 				}
 			},
 
@@ -137,7 +136,7 @@ const multiSender = function (cache, io) {
 			speed: (speed) => {
 				if (typeof speed === 'number') {
 					cache.user[socket.id].rotateSpeed = speed;
-					if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
+					if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
 				}
 			},
 
@@ -156,7 +155,7 @@ const multiSender = function (cache, io) {
 			console.log(tinyLog('user disconnected from the tiny pudding! :c', 'socket', socket.id));
 
 			// Remove User
-			if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-leave', socket.id); }
+			if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-leave', socket.id); }
 			if (cache.user[socket.id].roomId && cache.user[cache.user[socket.id].roomId]) {
 				const index = cache.user[cache.user[socket.id].roomId].indexOf(socket.id);
 				cache.user[cache.user[socket.id].roomId].splice(index, 1);
