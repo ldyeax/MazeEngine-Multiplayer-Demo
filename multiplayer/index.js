@@ -133,7 +133,7 @@ const multiSender = function (cache, io) {
 			},
 
 			// Speed Rotate
-			speed: (speed) => {
+			rotateSpeed: (speed) => {
 				if (typeof speed === 'number') {
 					cache.user[socket.id].rotateSpeed = speed;
 					if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
@@ -146,7 +146,7 @@ const multiSender = function (cache, io) {
 		socket.on('player-position', playerSender.position);
 		socket.on('player-scale', playerSender.scale);
 		socket.on('player-rotation', playerSender.rotation);
-		socket.on('player-rotate-speed', playerSender.speed);
+		socket.on('player-rotate-speed', playerSender.rotateSpeed);
 
 		// Disconnection
 		socket.on('disconnect', () => {
