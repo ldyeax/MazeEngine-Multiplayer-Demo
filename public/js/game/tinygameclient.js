@@ -56,12 +56,12 @@ export default class TinyGameClient {
 					const tinyThis = this;
 
 					this.socket = this.socketIO.socket;
-					this.socketID = this.socket.id;
-					console.log(tinyLog(this.socketID, 'socket', 'id'));
+					this.playerId = this.socket.id;
+					console.log(tinyLog(this.playerId, 'socket', 'id'));
 
 					this.socket.on('connect', () => {
-						tinyThis.socketID = tinyThis.socket.id;
-						console.log(tinyLog(this.socketID, 'socket', 'id'));
+						tinyThis.playerId = tinyThis.socket.id;
+						console.log(tinyLog(this.playerId, 'socket', 'id'));
 					});
 
 					// Online Users
@@ -121,7 +121,7 @@ export default class TinyGameClient {
 
 						if (id !== this.socket.id) {
 							tinyGame.players[id].model = this.mazeEngine.instantiate(Marble, {
-								isPlayer: id == tinyGame.socketID
+								isPlayer: id == tinyGame.playerId
 							});
 						}
 
@@ -163,11 +163,6 @@ export default class TinyGameClient {
 	// #endregion
 
 	// #region multiplayer game state
-
-	/**
-	 * @type {string}
-	 */
-	serverID = '';
 
 	/**
 	 * @type {string}
@@ -230,7 +225,7 @@ export default class TinyGameClient {
 			body: $('<center>').append(
 				$('<h3>').text('Welcome to Maze!'),
 				$('<center>').append(
-					$('<input>', { type: 'text', id: 'your_room_id', class: 'text-center form-control', readonly: true }).val(this.socketID),
+					$('<input>', { type: 'text', id: 'your_room_id', class: 'text-center form-control', readonly: true }).val(this.playerId),
 					$('<input>', { type: 'text', id: 'your_username', maxlength: 30, class: 'text-center form-control', placeholder: 'Insert your username here' }).val(localStorage.getItem('username')),
 					$('<input>', { type: 'text', id: 'room_id', class: 'text-center form-control', placeholder: 'Insert your friend player ID here' })
 				)
@@ -266,8 +261,8 @@ export default class TinyGameClient {
 
 		this.isHost = isHost
 		if (isHost) {
-			this.roomID = this.socketID;
-			console.log(tinyLog(`is host: setting roomID to socketID ${this.roomID}`, 'game'));
+			this.roomID = this.playerId;
+			console.log(tinyLog(`is host: setting room id to the player id ${this.roomID}`, 'game'));
 		} else {
 			this.roomID = $('#room_id').val().substring(0, 200);
 			console.log(tinyLog(`is client: setting roomID to ${this.roomID}`, 'game'));
