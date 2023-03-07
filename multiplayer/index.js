@@ -120,8 +120,8 @@ const multiSender = function (cache, io) {
 		const playerSender = {
 
 			// Position
-			position: (obj) => {
-				return function (id) {
+			position: (id) => {
+				return function (obj) {
 					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
 						cache.user[id].position = { x: obj.x, y: obj.y, z: obj.z };
 						if (cache.user[id].roomId) {
@@ -135,8 +135,8 @@ const multiSender = function (cache, io) {
 			},
 
 			// Scale
-			scale: (obj) => {
-				return function (id) {
+			scale: (id) => {
+				return function (obj) {
 					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
 						cache.user[id].scale = { x: obj.x, y: obj.y, z: obj.z };
 						if (cache.user[id].roomId) { io.to(cache.user[id].roomId).emit('player-scale', { id: id, data: cache.user[id].scale }); }
@@ -145,8 +145,8 @@ const multiSender = function (cache, io) {
 			},
 
 			// Rotation
-			rotation: (obj) => {
-				return function (id) {
+			rotation: (id) => {
+				return function (obj) {
 					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
 						cache.user[id].rotation = { x: obj.x, y: obj.y, z: obj.z };
 						if (cache.user[id].roomId) { io.to(cache.user[id].roomId).emit('player-rotation', { id: id, data: cache.user[id].rotation }); }
@@ -155,8 +155,8 @@ const multiSender = function (cache, io) {
 			},
 
 			// Speed Rotate
-			rotateSpeed: (speed) => {
-				return function (id) {
+			rotateSpeed: (id) => {
+				return function (speed) {
 					if (typeof speed === 'number' && cache.user[id]) {
 						cache.user[id].rotateSpeed = speed;
 						if (cache.user[id].roomId) { io.to(cache.user[id].roomId).emit('player-rotate-speed', { id: id, data: cache.user[id].rotateSpeed }); }
