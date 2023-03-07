@@ -276,9 +276,9 @@ export default class TinyGameClient {
 		}, (map, fn) => {
 
 			if (map) {
-				
+
 				this.#startGame2(map);
-				fn();
+				this.socket.emit('player-list-request');
 
 			} else {
 				alert('User Map not found! Please try again.');
