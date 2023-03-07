@@ -169,6 +169,7 @@ const multiSender = function (cache, io) {
 
 			socket.broadcast.emit('online-users', cache.online);
 			socket.emit('online-users', cache.online);
+			socket.leave(`game-${cache.user[socket.id].roomId}`);
 
 		});
 
