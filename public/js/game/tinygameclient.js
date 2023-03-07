@@ -5,11 +5,13 @@ import MazeEngine from "../../MazeEngine/engine/mazeengine.js";
 import SocketHandler from "./mazescript/tinygameclient_sockethandler.js";
 
 export default class TinyGameClient {
+
 	// #region SocketIO
 	/**
 	 * @type {SocketIO}
 	 */
 	socketIO = null;
+
 	/**
 	 * @type {SocketIOClient.Socket}
 	 */
@@ -63,14 +65,17 @@ export default class TinyGameClient {
 	 * @type {string}
 	 */
 	serverID = '';
+
 	/**
 	 * @type {string}
 	 */
 	roomID = '';
+
 	/**
 	 * @type {boolean}
 	 */
 	isHost = false;
+
 	/**
 	 * @type {string}
 	 */
@@ -80,14 +85,17 @@ export default class TinyGameClient {
 	 * @type {Object.<string, MazeObject>} Player ID -> Player object
 	 */
 	players = {}
+
 	// #endregion
 
 	// #region mazeengine variables
 	pathRoot = "/MazeEngine";
+
 	/**
 	 * @type {MazeEngine}
 	 */
 	mazeEngine = null;
+
 	/**
 	 * @type {TinyMultiplayerScene}
 	 */
@@ -95,13 +103,16 @@ export default class TinyGameClient {
 	// #endregion
 
 	constructor(args) {
+		
 		$.LoadingOverlay('show', { background: 'rgba(255,255,255, 0.8)' });
 		if (args.pathRoot) {
 			this.pathRoot = args.pathRoot;
 		}
+		
 		this.mazeEngine = new MazeEngine({
 			pathRoot: this.pathRoot
 		});
+
 	}
 
 	game() {
@@ -140,12 +151,16 @@ export default class TinyGameClient {
 	}
 
 	#startGame1(isHost) {
+
 		console.log(`#startGame1 ${isHost ? 'host' : 'client'}`);
+
 		$('#start_game').modal('hide');
+
 		this.username = $('#your_username').val().substring(0, 30);
 		if (window.localStorage) {
 			localStorage.setItem('username', this.username);
 		}
+
 		this.isHost = isHost
 		if (isHost) {
 			this.roomID = this.socketID;
@@ -154,7 +169,9 @@ export default class TinyGameClient {
 			this.roomID = $('#room_id').val().substring(0, 200);
 			console.log(`is client: setting roomID to ${this.roomID}`);
 		}
+
 		console.log("emitting request-map");
+
 		this.socket.emit(
 			'request-map',
 			{
@@ -169,9 +186,11 @@ export default class TinyGameClient {
 				}
 			}
 		);
+
 	}
 
 	#startGame2(map) {
+
 		console.log("#startGame2");
 		this.mazeEngine.start($('#canvas')[0]);
 
@@ -210,7 +229,9 @@ export default class TinyGameClient {
 			'background-color': '#252525',
 			'padding': '30px'
 		});
+
 		this.gui.html.base.append(tinyGame.gui.html.map);
 		this.gui.html.map.text(maze.asciiArt);
+		
 	}
 }

@@ -7,13 +7,14 @@ const multiSender = function (cache, io) {
 
 		// Add User
 		cache.online++;
-		cache.user[socket.id] = { 
+		cache.user[socket.id] = {
 			ip: socket.handshake.address,
-			position: {x: 0, y: 0, z: 0},
-			rotation: {x: 0, y: 0, z: 0},
-			scale: {x: 0, y: 0, z: 0},
+			position: { x: 0, y: 0, z: 0 },
+			rotation: { x: 0, y: 0, z: 0 },
+			scale: { x: 0, y: 0, z: 0 },
 			rotateSpeed: 1
 		};
+		
 		socket.broadcast.emit('online-users', cache.online);
 		socket.emit('online-users', cache.online);
 
@@ -58,21 +59,21 @@ const multiSender = function (cache, io) {
 
 				// Exist Map
 				if (cache.user[data.id].map) {
-					
-					if (cache.user[socket.id].room) { 
-						socket.leave(`game-${cache.user[socket.id].room}`); 
+
+					if (cache.user[socket.id].room) {
+						socket.leave(`game-${cache.user[socket.id].room}`);
 					}
 					cache.user[socket.id].room = data.id;
 
 
 					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
-					
+
 					socket.join(`game-${data.id}`);
 					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
 
 					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
 					socket.emit('player-username', { username: data.username, id: socket.id });
-				
+
 				}
 
 				// Nope
@@ -97,14 +98,11 @@ const multiSender = function (cache, io) {
 		socket.on('player-position', (obj) => {
 			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
 				cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) { 
-					io.to(cache.user[socket.id].room)
-						.emit('player-position', 
-							{ 
-								id: socket.id, 
-								data: cache.user[socket.id].position 
-							}
-						); 
+				if (cache.user[socket.id].room) {
+					io.to(cache.user[socket.id].room).emit('player-position', {
+						id: socket.id,
+						data: cache.user[socket.id].position
+					});
 				}
 			}
 		});
