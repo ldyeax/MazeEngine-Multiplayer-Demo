@@ -172,20 +172,16 @@ export default class TinyGameClient {
 
 		console.log("emitting request-map");
 
-		this.socket.emit(
-			'request-map',
-			{
-				id: this.roomID,
-				username: this.username
-			},
-			(map) => {
-				if (map) {
-					this.#startGame2(map);
-				} else {
-					alert('User Map not found! Please try again.');
-				}
+		this.socket.emit('request-map', {
+			id: this.roomID,
+			username: this.username
+		}, (map) => {
+			if (map) {
+				this.#startGame2(map);
+			} else {
+				alert('User Map not found! Please try again.');
 			}
-		);
+		});
 
 	}
 
@@ -198,12 +194,8 @@ export default class TinyGameClient {
 			tinyGameClient: this,
 			map: map
 		});
-		this.socketHandler = scene.addScript(
-			SocketHandler,
-			{
-				tinyGameClient: this
-			}
-		);
+
+		this.socketHandler = scene.addScript(SocketHandler, { tinyGameClient: this });
 
 		$.LoadingOverlay('hide');
 
@@ -216,7 +208,7 @@ export default class TinyGameClient {
 		console.log(tinyLog(`Height ${maze.height}`, 'game', 'map'));
 
 		// GUI
-		this.gui = { html: { base: $('<div>', { id: 'gui', class: 'prevent-select' }) } }
+		this.gui = { html: { base: $('<div>', { id: 'gui', class: 'prevent-select' }) } };
 		$('body').prepend(this.gui.html.base);
 
 		// Map
@@ -232,6 +224,6 @@ export default class TinyGameClient {
 
 		this.gui.html.base.append(tinyGame.gui.html.map);
 		this.gui.html.map.text(maze.asciiArt);
-		
+
 	}
 }
