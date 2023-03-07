@@ -54,7 +54,7 @@ export default class SocketIO {
 				console.log("connected");
 				this.connected = true;
 			});
-		} catch(err) {
+		} catch (err) {
 			console.error(err);
 			return;
 		}

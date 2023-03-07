@@ -44,7 +44,7 @@ export default class TinyGameClient {
 			SocketIO.loadScript().then(() => {
 				console.log("loadScript complete");
 				this.socketIO = new SocketIO();
-				this.socketIO.load().then(() =>{
+				this.socketIO.load().then(() => {
 					this.socket = this.socketIO.socket;
 					this.socketID = this.socket.id;
 					console.log(`Socket ID: ${this.socketID}`)
@@ -107,12 +107,12 @@ export default class TinyGameClient {
 	game() {
 		$.LoadingOverlay('hide');
 		tinyLib.modal({
-	
+
 			id: 'start_game',
-	
+
 			title: 'Maze Game',
 			dialog: 'modal-lg modal-dialog-centered prevent-select',
-	
+
 			body: $('<center>').append(
 				$('<h3>').text('Welcome to Maze!'),
 				$('<center>').append(
@@ -121,21 +121,21 @@ export default class TinyGameClient {
 					$('<input>', { type: 'text', id: 'room_id', class: 'text-center form-control', placeholder: 'Insert your friend player ID here' })
 				)
 			),
-	
+
 			footer: [
-	
+
 				// Multiplayer Host
 				$('<button>', { class: 'btn btn-secondary' }).text('Start Game').click(() => {
 					this.#startGame1(true);
 				}),
-	
+
 				// Multiplayer Join
 				$('<button>', { class: 'btn btn-primary' }).text('Join Game').click(() => {
 					this.#startGame1(false);
 				})
-	
+
 			]
-	
+
 		});
 	}
 
@@ -156,11 +156,11 @@ export default class TinyGameClient {
 		}
 		console.log("emitting request-map");
 		this.socket.emit(
-			'request-map', 
+			'request-map',
 			{
-				id: this.roomID, 
+				id: this.roomID,
 				username: this.username
-			}, 
+			},
 			(map) => {
 				if (map) {
 					this.#startGame2(map);
