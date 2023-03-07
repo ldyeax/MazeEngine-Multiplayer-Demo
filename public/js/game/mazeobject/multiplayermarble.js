@@ -13,12 +13,10 @@ export default class MultiPlayerMarbleTest extends MazeObject {
 
 		this.root = new THREE.Group();
 
-		if (!args.isPlayer) {
-			let mesh = mazeEngine.gltfAssets.marbletest.getRoot();
-			mesh.scale.set(3,3,3);
-			mesh.rotation.set(0, Math.PI, 0);
-			this.root.add(mesh);
-		}
+		let mesh = mazeEngine.gltfAssets.marbletest.getRoot();
+		mesh.scale.set(3,3,3);
+		mesh.rotation.set(0, Math.PI, 0);
+		this.root.add(mesh);
 
 		//this.addScript(CellAlphaReceiver);
 		this.addScript(CellLightSource);

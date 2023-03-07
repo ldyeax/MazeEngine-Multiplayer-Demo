@@ -113,16 +113,19 @@ export default class TinyGameClient {
 						}
 					});
 
-					this.socket.on('player-join', id => {
+					this.socket.on('player-join', (data, fn) => {
 
-						if (tinyGame.players[id]) { return; } else {
-							tinyGame.players[id] = {};
+						if (tinyGame.players[data.id]) { return; } else {
+							tinyGame.players[data.id] = {};
 						}
 
-						if (id !== this.socket.id) {
-							tinyGame.players[id].model = this.mazeEngine.instantiate(Marble, {
-								isPlayer: id == tinyGame.playerId
+						if (data.id !== this.socket.id) {
+
+							tinyGame.players[data.id].model = this.mazeEngine.instantiate(Marble, {
+								isPlayer: data.id == tinyGame.playerId
 							});
+
+							fn();
 						}
 
 					});
@@ -133,20 +136,21 @@ export default class TinyGameClient {
 						}
 					});
 
-					this.socket.on('player-leave', id => {
-						if (tinyGame.players[id]) {
+					this.socket.on('player-leave', (data) => {
+						if (tinyGame.players[data.id]) {
 							try {
-								tinyGame.players[id].model.destroy();
+								tinyGame.players[data.id].model.destroy();
 							} catch (ex) {
 								console.error('error attempting to destroy existing player');
 								console.error(ex);
 							}
 							// give mazeengine time to process destroy()
 							setTimeout(() => {
-								delete tinyGame.players[id];
+								delete tinyGame.players[data.id];
+								fn();
 							}, 2);
 						}
-						if (id === tinyGame.roomId) {
+						if (data.id === tinyGame.roomId) {
 							$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
 							location.reload();
 						}

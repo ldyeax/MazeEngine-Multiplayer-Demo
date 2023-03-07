@@ -70,7 +70,7 @@ const multiSender = function (cache, io) {
 					cache.user[socket.id].roomId = data.id;
 
 					// Send Join Emit
-					io.to(cache.user[socket.id].roomId).emit('player-join', socket.id);
+					io.to(cache.user[socket.id].roomId).emit('player-join', { id: socket.id, request: false }, () => { });
 					socket.join(`game-${data.id}`);
 
 					// Invoke Player List
@@ -104,8 +104,12 @@ const multiSender = function (cache, io) {
 		socket.on('player-list-request', () => {
 			const roomId = cache.user[socket.id].roomId;
 			if (Array.isArray(cache.user[roomId].players)) {
-				for(const item in cache.user[roomId].players) {
-					socket.emit('player-join',  cache.user[roomId].players[item]);
+				for (const item in cache.user[roomId].players) {
+					socket.emit('player-join', { id: cache.user[roomId].players[item], request: true }, () => {
+						for (const value in playerSender) {
+							playerSender[value]({ id: cache.user[roomId].players[item] });
+						}
+					});
 				}
 			}
 		});
@@ -115,48 +119,56 @@ const multiSender = function (cache, io) {
 
 			// Position
 			position: (obj) => {
-				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-					cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
-					if (cache.user[socket.id].roomId) {
-						io.to(cache.user[socket.id].roomId).emit('player-position', {
-							id: socket.id,
-							data: cache.user[socket.id].position
-						});
+				return function (id) {
+					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
+						cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
+						if (cache.user[socket.id].roomId) {
+							io.to(cache.user[socket.id].roomId).emit('player-position', {
+								id: socket.id,
+								data: cache.user[socket.id].position
+							});
+						}
 					}
 				}
 			},
 
 			// Scale
 			scale: (obj) => {
-				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-					cache.user[socket.id].scale = { x: obj.x, y: obj.y, z: obj.z };
-					if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-scale', { id: socket.id, data: cache.user[socket.id].scale }); }
+				return function (id) {
+					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
+						cache.user[socket.id].scale = { x: obj.x, y: obj.y, z: obj.z };
+						if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-scale', { id: socket.id, data: cache.user[socket.id].scale }); }
+					}
 				}
 			},
 
 			// Rotation
 			rotation: (obj) => {
-				if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-					cache.user[socket.id].rotation = { x: obj.x, y: obj.y, z: obj.z };
-					if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-rotation', { id: socket.id, data: cache.user[socket.id].rotation }); }
+				return function (id) {
+					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
+						cache.user[socket.id].rotation = { x: obj.x, y: obj.y, z: obj.z };
+						if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-rotation', { id: socket.id, data: cache.user[socket.id].rotation }); }
+					}
 				}
 			},
 
 			// Speed Rotate
 			rotateSpeed: (speed) => {
-				if (typeof speed === 'number') {
-					cache.user[socket.id].rotateSpeed = speed;
-					if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
+				return function (id) {
+					if (typeof speed === 'number') {
+						cache.user[socket.id].rotateSpeed = speed;
+						if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
+					}
 				}
 			},
 
 		};
 
 		// Player Socket
-		socket.on('player-position', playerSender.position);
-		socket.on('player-scale', playerSender.scale);
-		socket.on('player-rotation', playerSender.rotation);
-		socket.on('player-rotate-speed', playerSender.rotateSpeed);
+		socket.on('player-position', playerSender.position(socket.id));
+		socket.on('player-scale', playerSender.scale(socket.id));
+		socket.on('player-rotation', playerSender.rotation(socket.id));
+		socket.on('player-rotate-speed', playerSender.rotateSpeed(socket.id));
 
 		// Disconnection
 		socket.on('disconnect', () => {
@@ -165,7 +177,7 @@ const multiSender = function (cache, io) {
 			console.log(tinyLog('user disconnected from the tiny pudding! :c', 'socket', socket.id));
 
 			// Remove User
-			if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-leave', socket.id); }
+			if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-leave', { id: socket.id, request: false }, () => { }); }
 			if (cache.user[socket.id].roomId && cache.user[cache.user[socket.id].roomId]) {
 
 				const roomId = cache.user[socket.id].roomId;
