@@ -78,7 +78,7 @@ const multiSender = function (cache, io) {
 						const roomId = cache.user[socket.id].roomId;
 						if (Array.isArray(cache.user[roomId].players)) {
 							for(const item in cache.user[roomId].players) {
-								socket.emit('player-join', socket.id);
+								socket.emit('player-join',  cache.user[roomId].players[item]);
 							}
 						}
 					});
