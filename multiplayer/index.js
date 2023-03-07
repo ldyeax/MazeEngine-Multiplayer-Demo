@@ -161,7 +161,7 @@ const multiSender = function (cache, io) {
 				const roomId = cache.user[socket.id].roomId;
 
 				if (Array.isArray(cache.user[roomId].players)) {
-					const index = cache.user[roomId].indexOf(socket.id);
+					const index = cache.user[roomId].players.indexOf(socket.id);
 					cache.user[roomId].players.splice(index, 1);
 				}
 
