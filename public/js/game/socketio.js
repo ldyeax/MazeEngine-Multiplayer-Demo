@@ -1,6 +1,6 @@
 
 /**
- * @typedef {import("../MazeEngine/engine/mazeengine.js").default} MazeEngine
+ * @typedef {import('../MazeEngine/engine/mazeengine.js').default} MazeEngine
  */
 export default class SocketIO {
 	static scriptLoaded = false;
@@ -10,11 +10,11 @@ export default class SocketIO {
 		document.head.appendChild(script);
 		script.onerror = function (err) { console.error(err); };
 		script.async = true;
-		script.src = "/socket.io/socket.io.js";
+		script.src = '/socket.io/socket.io.js';
 		script.onload = function () {
 			SocketIO.scriptLoaded = true;
 		};
-		console.log("appended script");
+		console.log(tinyLog('appended script', 'html'));
 	}
 
 	connected = false;
@@ -48,15 +48,18 @@ export default class SocketIO {
 
 	constructor() {
 		try {
+			
 			this.socket = io(`${location.protocol}//${location.hostname}:3001`);
-			console.log("starting connect event listener")
+			console.log(tinyLog('starting connect event listener', 'socket'))
 			this.socket.on('connect', () => {
-				console.log("connected");
+				console.log(tinyLog('connected', 'socket'));
 				this.connected = true;
 			});
-		} catch(err) {
+
+		} catch (err) {
 			console.error(err);
 			return;
 		}
 	}
+
 }

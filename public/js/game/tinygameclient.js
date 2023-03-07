@@ -1,15 +1,17 @@
-import SocketIO from "./socketio.js";
+import SocketIO from './socketio.js';
 
-import TinyMultiplayerScene from "./scene/tinymultiplayerscene.js";
-import MazeEngine from "../../MazeEngine/engine/mazeengine.js";
-import SocketHandler from "./mazescript/tinygameclient_sockethandler.js";
+import TinyMultiplayerScene from './scene/tinymultiplayerscene.js';
+import MazeEngine from '../../MazeEngine/engine/mazeengine.js';
+import SocketHandler from './mazescript/tinygameclient_sockethandler.js';
 
 export default class TinyGameClient {
+
 	// #region SocketIO
 	/**
 	 * @type {SocketIO}
 	 */
 	socketIO = null;
+
 	/**
 	 * @type {SocketIOClient.Socket}
 	 */
@@ -24,9 +26,11 @@ export default class TinyGameClient {
 	#socketIOLoaded = false;
 
 	load() {
+
 		this.mazeEngine.loadAssets().then(() => {
 			this.#mazeLoaded = true;
 		});
+
 		this.#loadSocketIO();
 
 		return new Promise((resolve) => {
@@ -37,19 +41,30 @@ export default class TinyGameClient {
 				}
 			});
 		});
+
 	}
 
 	#loadSocketIO() {
 		return new Promise((resolve) => {
 			SocketIO.loadScript().then(() => {
-				console.log("loadScript complete");
+				console.log(tinyLog('loadScript complete', 'socket'));
 				this.socketIO = new SocketIO();
-				this.socketIO.load().then(() =>{
+				this.socketIO.load().then(() => {
+
+					const tinyThis = this;
+
 					this.socket = this.socketIO.socket;
 					this.socketID = this.socket.id;
-					console.log(`Socket ID: ${this.socketID}`)
+					console.log(tinyLog(this.socketID, 'socket', 'id'));
+
+					this.socket.on('connect', () => {
+						tinyThis.socketID = tinyThis.socket.id;
+						console.log(tinyLog(this.socketID, 'socket', 'id'));
+					});
+
 					this.#socketIOLoaded = true;
 					resolve();
+
 				})
 			});
 		});
@@ -63,31 +78,37 @@ export default class TinyGameClient {
 	 * @type {string}
 	 */
 	serverID = '';
+
 	/**
 	 * @type {string}
 	 */
 	roomID = '';
+
 	/**
 	 * @type {boolean}
 	 */
 	isHost = false;
+
 	/**
 	 * @type {string}
 	 */
-	username = "minha_pequenina_jasminha";
+	username = 'minha_pequenina_jasminha';
 
 	/**
 	 * @type {Object.<string, MazeObject>} Player ID -> Player object
 	 */
 	players = {}
+
 	// #endregion
 
 	// #region mazeengine variables
-	pathRoot = "/MazeEngine";
+	pathRoot = '/MazeEngine';
+
 	/**
 	 * @type {MazeEngine}
 	 */
 	mazeEngine = null;
+
 	/**
 	 * @type {TinyMultiplayerScene}
 	 */
@@ -95,24 +116,27 @@ export default class TinyGameClient {
 	// #endregion
 
 	constructor(args) {
+
 		$.LoadingOverlay('show', { background: 'rgba(255,255,255, 0.8)' });
 		if (args.pathRoot) {
 			this.pathRoot = args.pathRoot;
 		}
+
 		this.mazeEngine = new MazeEngine({
 			pathRoot: this.pathRoot
 		});
+
 	}
 
 	game() {
 		$.LoadingOverlay('hide');
 		tinyLib.modal({
-	
+
 			id: 'start_game',
-	
+
 			title: 'Maze Game',
 			dialog: 'modal-lg modal-dialog-centered prevent-select',
-	
+
 			body: $('<center>').append(
 				$('<h3>').text('Welcome to Maze!'),
 				$('<center>').append(
@@ -121,70 +145,70 @@ export default class TinyGameClient {
 					$('<input>', { type: 'text', id: 'room_id', class: 'text-center form-control', placeholder: 'Insert your friend player ID here' })
 				)
 			),
-	
+
 			footer: [
-	
+
 				// Multiplayer Host
 				$('<button>', { class: 'btn btn-secondary' }).text('Start Game').click(() => {
 					this.#startGame1(true);
 				}),
-	
+
 				// Multiplayer Join
 				$('<button>', { class: 'btn btn-primary' }).text('Join Game').click(() => {
 					this.#startGame1(false);
 				})
-	
+
 			]
-	
+
 		});
 	}
 
 	#startGame1(isHost) {
-		console.log(`#startGame1 ${isHost ? 'host' : 'client'}`);
+
+		console.log(tinyLog(`#startGame1 ${isHost ? 'host' : 'client'}`, 'game'));
+
 		$('#start_game').modal('hide');
+
 		this.username = $('#your_username').val().substring(0, 30);
 		if (window.localStorage) {
 			localStorage.setItem('username', this.username);
 		}
+
 		this.isHost = isHost
 		if (isHost) {
 			this.roomID = this.socketID;
-			console.log(`is host: setting roomID to socketID ${this.roomID}`);
+			console.log(tinyLog(`is host: setting roomID to socketID ${this.roomID}`, 'game'));
 		} else {
 			this.roomID = $('#room_id').val().substring(0, 200);
-			console.log(`is client: setting roomID to ${this.roomID}`);
+			console.log(tinyLog(`is client: setting roomID to ${this.roomID}`, 'game'));
 		}
-		console.log("emitting request-map");
-		this.socket.emit(
-			'request-map', 
-			{
-				id: this.roomID, 
-				username: this.username
-			}, 
-			(map) => {
-				if (map) {
-					this.#startGame2(map);
-				} else {
-					alert('User Map not found! Please try again.');
-				}
+
+		console.log(tinyLog('emitting request-map', 'socket'));
+
+		this.socket.emit('request-map', {
+			id: this.roomID,
+			username: this.username
+		}, (map) => {
+			if (map) {
+				this.#startGame2(map);
+			} else {
+				alert('User Map not found! Please try again.');
 			}
-		);
+		});
+
 	}
 
 	#startGame2(map) {
-		console.log("#startGame2");
+
+		console.log(tinyLog('#startGame2', 'game'));
 		this.mazeEngine.start($('#canvas')[0]);
 
 		let scene = this.scene = this.mazeEngine.instantiate(TinyMultiplayerScene, {
 			tinyGameClient: this,
 			map: map
 		});
-		this.socketHandler = scene.addScript(
-			SocketHandler,
-			{
-				tinyGameClient: this
-			}
-		);
+
+		this.socketHandler = scene.addScript(SocketHandler, { tinyGameClient: this });
 
 		$.LoadingOverlay('hide');
 
@@ -197,7 +221,7 @@ export default class TinyGameClient {
 		console.log(tinyLog(`Height ${maze.height}`, 'game', 'map'));
 
 		// GUI
-		this.gui = { html: { base: $('<div>', { id: 'gui', class: 'prevent-select' }) } }
+		this.gui = { html: { base: $('<div>', { id: 'gui', class: 'prevent-select' }) } };
 		$('body').prepend(this.gui.html.base);
 
 		// Map
@@ -210,7 +234,9 @@ export default class TinyGameClient {
 			'background-color': '#252525',
 			'padding': '30px'
 		});
+
 		this.gui.html.base.append(tinyGame.gui.html.map);
 		this.gui.html.map.text(maze.asciiArt);
+
 	}
 }
