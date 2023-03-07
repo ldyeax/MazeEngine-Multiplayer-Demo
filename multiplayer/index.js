@@ -74,14 +74,7 @@ const multiSender = function (cache, io) {
 					socket.join(`game-${data.id}`);
 
 					// Invoke Player List
-					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height }, function() {
-						const roomId = cache.user[socket.id].roomId;
-						if (Array.isArray(cache.user[roomId].players)) {
-							for(const item in cache.user[roomId].players) {
-								socket.emit('player-join',  cache.user[roomId].players[item]);
-							}
-						}
-					});
+					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
 
 					// Send Username
 					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
@@ -103,6 +96,16 @@ const multiSender = function (cache, io) {
 				}
 				if (!cache.user[data.id]) {
 					console.log(tinyLog(`request-map: cache.user[${data.id}] does not exist`, 'socket', socket.id));
+				}
+			}
+		});
+
+		// Player Request
+		socket.on('player-list-request', () => {
+			const roomId = cache.user[socket.id].roomId;
+			if (Array.isArray(cache.user[roomId].players)) {
+				for(const item in cache.user[roomId].players) {
+					socket.emit('player-join',  cache.user[roomId].players[item]);
 				}
 			}
 		});
