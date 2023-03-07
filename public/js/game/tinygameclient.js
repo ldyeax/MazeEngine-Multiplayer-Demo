@@ -1,8 +1,8 @@
-import SocketIO from "./socketio.js";
+import SocketIO from './socketio.js';
 
-import TinyMultiplayerScene from "./scene/tinymultiplayerscene.js";
-import MazeEngine from "../../MazeEngine/engine/mazeengine.js";
-import SocketHandler from "./mazescript/tinygameclient_sockethandler.js";
+import TinyMultiplayerScene from './scene/tinymultiplayerscene.js';
+import MazeEngine from '../../MazeEngine/engine/mazeengine.js';
+import SocketHandler from './mazescript/tinygameclient_sockethandler.js';
 
 export default class TinyGameClient {
 
@@ -26,9 +26,11 @@ export default class TinyGameClient {
 	#socketIOLoaded = false;
 
 	load() {
+
 		this.mazeEngine.loadAssets().then(() => {
 			this.#mazeLoaded = true;
 		});
+
 		this.#loadSocketIO();
 
 		return new Promise((resolve) => {
@@ -39,12 +41,13 @@ export default class TinyGameClient {
 				}
 			});
 		});
+		
 	}
 
 	#loadSocketIO() {
 		return new Promise((resolve) => {
 			SocketIO.loadScript().then(() => {
-				console.log("loadScript complete");
+				console.log('loadScript complete');
 				this.socketIO = new SocketIO();
 				this.socketIO.load().then(() => {
 					this.socket = this.socketIO.socket;
@@ -79,7 +82,7 @@ export default class TinyGameClient {
 	/**
 	 * @type {string}
 	 */
-	username = "minha_pequenina_jasminha";
+	username = 'minha_pequenina_jasminha';
 
 	/**
 	 * @type {Object.<string, MazeObject>} Player ID -> Player object
@@ -89,7 +92,7 @@ export default class TinyGameClient {
 	// #endregion
 
 	// #region mazeengine variables
-	pathRoot = "/MazeEngine";
+	pathRoot = '/MazeEngine';
 
 	/**
 	 * @type {MazeEngine}
@@ -170,7 +173,7 @@ export default class TinyGameClient {
 			console.log(`is client: setting roomID to ${this.roomID}`);
 		}
 
-		console.log("emitting request-map");
+		console.log('emitting request-map');
 
 		this.socket.emit('request-map', {
 			id: this.roomID,
@@ -187,7 +190,7 @@ export default class TinyGameClient {
 
 	#startGame2(map) {
 
-		console.log("#startGame2");
+		console.log('#startGame2');
 		this.mazeEngine.start($('#canvas')[0]);
 
 		let scene = this.scene = this.mazeEngine.instantiate(TinyMultiplayerScene, {
