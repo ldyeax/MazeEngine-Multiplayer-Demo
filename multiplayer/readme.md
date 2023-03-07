@@ -1,4 +1,4 @@
-# Socket.IO - Client Side
+# Socket.IO - Server Side
 
 
 ## Send messages
