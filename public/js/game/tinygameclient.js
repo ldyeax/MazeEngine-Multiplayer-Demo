@@ -1,4 +1,5 @@
 import SocketIO from './socketio.js';
+import Marble from './mazeobject/multiplayermarble.js';
 
 import TinyMultiplayerScene from './scene/tinymultiplayerscene.js';
 import MazeEngine from '../../MazeEngine/engine/mazeengine.js';
@@ -47,6 +48,7 @@ export default class TinyGameClient {
 	#loadSocketIO() {
 		return new Promise((resolve) => {
 			SocketIO.loadScript().then(() => {
+
 				console.log(tinyLog('loadScript complete', 'socket'));
 				this.socketIO = new SocketIO();
 				this.socketIO.load().then(() => {
@@ -60,6 +62,94 @@ export default class TinyGameClient {
 					this.socket.on('connect', () => {
 						tinyThis.socketID = tinyThis.socket.id;
 						console.log(tinyLog(this.socketID, 'socket', 'id'));
+					});
+
+					// Online Users
+					this.socket.on('online-users', (online) => {
+						if (typeof online === 'number') {
+							tinyGame.online = online;
+						}
+					});
+
+					// Disconnected
+					this.socket.on('disconnect', () => {
+						console.log(tinyLog(`Disconnected!`, 'socket'));
+						$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
+						if (tinyGame.isHost) {
+							location.reload();
+						}
+					});
+
+					this.socket.on('player-position', obj => {
+						if (tinyGame.players[obj.id]) {
+
+							tinyGame.players[obj.id].position = obj.data;
+							if (tinyGame.players[obj.id].model) { tinyGame.players[obj.id].model.position.set(obj.data.x, obj.data.y, obj.data.z); }
+
+						}
+					});
+
+					this.socket.on('player-scale', obj => {
+						if (tinyGame.players[obj.id]) {
+
+							tinyGame.players[obj.id].scale = obj.data;
+							if (tinyGame.players[obj.id].model) { tinyGame.players[obj.id].model.scale.set(obj.data.x, obj.data.y, obj.data.z); }
+
+						}
+					});
+
+					this.socket.on('player-rotation', obj => {
+						if (tinyGame.players[obj.id]) {
+
+							tinyGame.players[obj.id].rotation = obj.data;
+							if (tinyGame.players[obj.id].model) { tinyGame.players[obj.id].model.rotation.set(obj.data.x, obj.data.y, obj.data.z); }
+
+						}
+					});
+
+					this.socket.on('player-rotate-speed', obj => {
+						if (tinyGame.players[obj.id]) {
+							tinyGame.players[obj.id].model.rotateSpeed = obj.data;
+						}
+					});
+
+					this.socket.on('player-join', id => {
+
+						if (tinyGame.players[id]) { return; } else {
+							tinyGame.players[id] = {};
+						}
+
+						if (id !== this.socket.id) {
+							tinyGame.players[id].model = this.mazeEngine.instantiate(Marble, {
+								isPlayer: id == tinyGame.socketID
+							});
+						}
+
+					});
+
+					this.socket.on('player-username', data => {
+						if (tinyGame.players[data.id]) {
+							tinyGame.players[data.id].username = data.username;
+						}
+					});
+
+					this.socket.on('player-leave', id => {
+						if (tinyGame.players[id]) {
+							try {
+								tinyGame.players[id].model.destroy();
+							} catch (ex) {
+								console.error('error attempting to destroy existing player');
+								console.error(ex);
+							}
+							// give mazeengine time to process destroy()
+							setTimeout(() => {
+								delete tinyGame.players[id];
+							}, 2);
+						}
+						if (id === tinyGame.roomID) {
+							$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
+							location.reload();
+						}
 					});
 
 					this.#socketIOLoaded = true;
