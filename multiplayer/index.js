@@ -56,10 +56,12 @@ const multiSender = function (cache, io) {
 
 					// Insert User
 					cache.user[socket.id].players = [socket.id];
+					socket.join(`game-${socket.id}`);
 
 				} else {
 					cache.user[socket.id].map = cache.user[data.id].map;
 					cache.user[data.id].players.push(socket.id);
+					socket.join(`game-${data.id}`);
 				}
 
 				// Exist Map
@@ -71,7 +73,6 @@ const multiSender = function (cache, io) {
 
 					// Send Join Emit
 					io.to(cache.user[socket.id].roomId).emit('player-join', { id: socket.id, request: false }, () => { });
-					socket.join(`game-${data.id}`);
 
 					// Invoke Player List
 					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
