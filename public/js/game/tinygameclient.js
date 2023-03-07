@@ -146,7 +146,7 @@ export default class TinyGameClient {
 								delete tinyGame.players[id];
 							}, 2);
 						}
-						if (id === tinyGame.roomID) {
+						if (id === tinyGame.roomId) {
 							$.LoadingOverlay('show', { background: 'rgba(0,0,0, 0.5)' });
 							location.reload();
 						}
@@ -167,7 +167,7 @@ export default class TinyGameClient {
 	/**
 	 * @type {string}
 	 */
-	roomID = '';
+	roomId = '';
 
 	/**
 	 * @type {boolean}
@@ -261,17 +261,17 @@ export default class TinyGameClient {
 
 		this.isHost = isHost
 		if (isHost) {
-			this.roomID = this.playerId;
-			console.log(tinyLog(`is host: setting room id to the player id ${this.roomID}`, 'game'));
+			this.roomId = this.playerId;
+			console.log(tinyLog(`is host: setting room id to the player id ${this.roomId}`, 'game'));
 		} else {
-			this.roomID = $('#room_id').val().substring(0, 200);
-			console.log(tinyLog(`is client: setting roomID to ${this.roomID}`, 'game'));
+			this.roomId = $('#room_id').val().substring(0, 200);
+			console.log(tinyLog(`is client: setting roomId to ${this.roomId}`, 'game'));
 		}
 
 		console.log(tinyLog('emitting request-map', 'socket'));
 
 		this.socket.emit('request-map', {
-			id: this.roomID,
+			id: this.roomId,
 			username: this.username
 		}, (map) => {
 			if (map) {
