@@ -72,7 +72,7 @@ const multiSender = function (cache, io) {
 					cache.user[socket.id].roomId = data.id;
 
 					// Send Join Emit
-					io.to(cache.user[socket.id].roomId).emit('player-join', { id: socket.id, request: false }, () => { });
+					io.to(`game-${cache.user[socket.id].roomId}`).emit('player-join', { id: socket.id, request: false }, () => { });
 
 					// Invoke Player List
 					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
@@ -126,7 +126,7 @@ const multiSender = function (cache, io) {
 					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
 						cache.user[id].position = { x: obj.x, y: obj.y, z: obj.z };
 						if (cache.user[id].roomId) {
-							io.to(cache.user[id].roomId).emit('player-position', {
+							io.to(`game-${cache.user[id].roomId}`).emit('player-position', {
 								id: id,
 								data: cache.user[id].position
 							});
@@ -140,7 +140,7 @@ const multiSender = function (cache, io) {
 				return function (obj) {
 					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
 						cache.user[id].scale = { x: obj.x, y: obj.y, z: obj.z };
-						if (cache.user[id].roomId) { io.to(cache.user[id].roomId).emit('player-scale', { id: id, data: cache.user[id].scale }); }
+						if (cache.user[id].roomId) { io.to(`game-${cache.user[id].roomId}`).emit('player-scale', { id: id, data: cache.user[id].scale }); }
 					}
 				}
 			},
@@ -150,7 +150,7 @@ const multiSender = function (cache, io) {
 				return function (obj) {
 					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
 						cache.user[id].rotation = { x: obj.x, y: obj.y, z: obj.z };
-						if (cache.user[id].roomId) { io.to(cache.user[id].roomId).emit('player-rotation', { id: id, data: cache.user[id].rotation }); }
+						if (cache.user[id].roomId) { io.to(`game-${cache.user[id].roomId}`).emit('player-rotation', { id: id, data: cache.user[id].rotation }); }
 					}
 				}
 			},
@@ -160,7 +160,7 @@ const multiSender = function (cache, io) {
 				return function (speed) {
 					if (typeof speed === 'number' && cache.user[id]) {
 						cache.user[id].rotateSpeed = speed;
-						if (cache.user[id].roomId) { io.to(cache.user[id].roomId).emit('player-rotate-speed', { id: id, data: cache.user[id].rotateSpeed }); }
+						if (cache.user[id].roomId) { io.to(`game-${cache.user[id].roomId}`).emit('player-rotate-speed', { id: id, data: cache.user[id].rotateSpeed }); }
 					}
 				}
 			},
@@ -180,7 +180,7 @@ const multiSender = function (cache, io) {
 			console.log(tinyLog('user disconnected from the tiny pudding! :c', 'socket', socket.id));
 
 			// Remove User
-			if (cache.user[socket.id].roomId) { io.to(cache.user[socket.id].roomId).emit('player-leave', { id: socket.id, request: false }, () => { }); }
+			if (cache.user[socket.id].roomId) { io.to(`game-${cache.user[socket.id].roomId}`).emit('player-leave', { id: socket.id, request: false }, () => { }); }
 			if (cache.user[socket.id].roomId && cache.user[cache.user[socket.id].roomId]) {
 
 				const roomId = cache.user[socket.id].roomId;
