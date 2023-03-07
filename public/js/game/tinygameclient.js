@@ -273,12 +273,17 @@ export default class TinyGameClient {
 		this.socket.emit('request-map', {
 			id: this.roomId,
 			username: this.username
-		}, (map) => {
+		}, (map, fn) => {
+
 			if (map) {
+				
 				this.#startGame2(map);
+				fn();
+
 			} else {
 				alert('User Map not found! Please try again.');
 			}
+
 		});
 
 	}

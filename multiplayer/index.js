@@ -73,8 +73,15 @@ const multiSender = function (cache, io) {
 					io.to(cache.user[socket.id].roomId).emit('player-join', socket.id);
 					socket.join(`game-${data.id}`);
 
-					// Return Message
-					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
+					// Invoke Player List
+					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height }, function() {
+						const roomId = cache.user[socket.id].roomId;
+						if (Array.isArray(cache.user[roomId].players)) {
+							for(const item in cache.user[roomId].players) {
+								socket.emit('player-join', socket.id);
+							}
+						}
+					});
 
 					// Send Username
 					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
