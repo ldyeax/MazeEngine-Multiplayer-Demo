@@ -18,12 +18,6 @@ const multiSender = function (cache, io) {
 		socket.broadcast.emit('online-users', cache.online);
 		socket.emit('online-users', cache.online);
 
-		// Map Generator
-		cache.user[socket.id].map = generateMaze(15, 15);
-		cache.user[socket.id].map.ret;
-		cache.user[socket.id].map.seed;
-		cache.user[socket.id].map.asciiArt;
-
 		// Connect Detected
 		console.log(tinyLog('a user connected on the tiny pudding! :3', 'socket', socket.id));
 		console.log(tinyLog('user ip ' + cache.user[socket.id].ip, 'socket', socket.id));
@@ -42,7 +36,7 @@ const multiSender = function (cache, io) {
 					data.username = '???';
 				}
 
-				// Size
+				// Map Size
 				const size = { height: 15, width: 15 };
 
 				// Username
@@ -51,25 +45,29 @@ const multiSender = function (cache, io) {
 				}
 
 				// Create Map
-				if (!cache.user[data.id].map && data.id === socket.id) {
+				console.log(data.id, socket.id);
+				if (data.id && (!cache.user[data.id] || !cache.user[data.id].map) && data.id === socket.id) {
+
+					// Map Generator
 					cache.user[socket.id].map = generateMaze(size.width, size.height);
-					cache.user[socket.id].players = [];
+					cache.user[socket.id].map.ret;
+					cache.user[socket.id].map.seed;
+					cache.user[socket.id].map.asciiArt;
+
+					// Insert User
+					cache.user[socket.id].players = [socket.id];
+
 				} else {
 					cache.user[socket.id].map = cache.user[data.id].map;
 					cache.user[socket.id].roomId = data.id;
+					cache.user[data.id].players.push(socket.id);
 				}
 
 				// Exist Map
 				if (cache.user[data.id].map) {
 
-					// Add Player
-					cache.user[socket.id].players.push(socket.id);
-
 					// Add to Room
-					if (cache.user[socket.id].room) {
-						socket.leave(`game-${cache.user[socket.id].room}`);
-					}
-
+					if (cache.user[socket.id].room) { socket.leave(`game-${cache.user[socket.id].room}`); }
 					cache.user[socket.id].room = data.id;
 
 					// Send Join Emit
