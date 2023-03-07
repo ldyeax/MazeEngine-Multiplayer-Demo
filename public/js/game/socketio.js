@@ -48,12 +48,14 @@ export default class SocketIO {
 
 	constructor() {
 		try {
+			
 			this.socket = io(`${location.protocol}//${location.hostname}:3001`);
 			console.log(tinyLog('starting connect event listener', 'socket'))
 			this.socket.on('connect', () => {
 				console.log(tinyLog('connected', 'socket'));
 				this.connected = true;
 			});
+
 		} catch (err) {
 			console.error(err);
 			return;
