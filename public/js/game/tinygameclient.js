@@ -41,7 +41,7 @@ export default class TinyGameClient {
 				}
 			});
 		});
-		
+
 	}
 
 	#loadSocketIO() {
@@ -50,11 +50,21 @@ export default class TinyGameClient {
 				console.log(tinyLog('loadScript complete', 'socket'));
 				this.socketIO = new SocketIO();
 				this.socketIO.load().then(() => {
+
+					const tinyThis = this;
+
 					this.socket = this.socketIO.socket;
 					this.socketID = this.socket.id;
-					console.log(tinyLog(this.socketID, 'socket', 'id'))
+					console.log(tinyLog(this.socketID, 'socket', 'id'));
+
+					this.socket.on('connect', () => {
+						tinyThis.socketID = tinyThis.socket.id;
+						console.log(tinyLog(this.socketID, 'socket', 'id'));
+					});
+
 					this.#socketIOLoaded = true;
 					resolve();
+
 				})
 			});
 		});
@@ -106,12 +116,12 @@ export default class TinyGameClient {
 	// #endregion
 
 	constructor(args) {
-		
+
 		$.LoadingOverlay('show', { background: 'rgba(255,255,255, 0.8)' });
 		if (args.pathRoot) {
 			this.pathRoot = args.pathRoot;
 		}
-		
+
 		this.mazeEngine = new MazeEngine({
 			pathRoot: this.pathRoot
 		});
