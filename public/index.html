@@ -51,13 +51,16 @@
 			import TinyGameClient from "game/tinygameclient.js";
 
 			let tinyGame = window.tinyGame = new TinyGameClient({
-				pathRoot: "/MazeEngine",
+				pathRoot: '/MazeEngine',
 			});
-			console.log("constructed tinyGame");
+
+			console.log(tinyLog('constructed tinyGame', 'game'));
 			await tinyGame.load();
-			console.log("tinyGame loaded");
+
+			console.log(tinyLog('tinyGame loaded', 'game'));
 			tinyGame.game();
-			console.log("called tinyGame.game()");
+			console.log(tinyLog('called tinyGame.game()', 'game'));
+
 		</script>
 
 	</body>

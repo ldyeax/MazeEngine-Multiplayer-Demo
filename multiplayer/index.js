@@ -1,5 +1,6 @@
 import { tinyLog } from '../tinyLog.js';
 import generateMaze from 'engine/generatemaze.js';
+import { getCfg } from '../config';
 
 // An instance of multiSender exists per player
 const multiSender = function (cache, io) {
@@ -7,21 +8,16 @@ const multiSender = function (cache, io) {
 
 		// Add User
 		cache.online++;
-		cache.user[socket.id] = { 
+		cache.user[socket.id] = {
 			ip: socket.handshake.address,
-			position: {x: 0, y: 0, z: 0},
-			rotation: {x: 0, y: 0, z: 0},
-			scale: {x: 0, y: 0, z: 0},
+			position: { x: 0, y: 0, z: 0 },
+			rotation: { x: 0, y: 0, z: 0 },
+			scale: { x: 0, y: 0, z: 0 },
 			rotateSpeed: 1
 		};
+
 		socket.broadcast.emit('online-users', cache.online);
 		socket.emit('online-users', cache.online);
-
-		// Map Generator
-		cache.user[socket.id].map = generateMaze(15, 15);
-		cache.user[socket.id].map.ret;
-		cache.user[socket.id].map.seed;
-		cache.user[socket.id].map.asciiArt;
 
 		// Connect Detected
 		console.log(tinyLog('a user connected on the tiny pudding! :3', 'socket', socket.id));
@@ -41,8 +37,8 @@ const multiSender = function (cache, io) {
 					data.username = '???';
 				}
 
-				// Size
-				const size = { height: 15, width: 15 };
+				// Map Size
+				const size = getCfg.map();
 
 				// Username
 				if (!cache.user[socket.id].map) {
@@ -50,29 +46,42 @@ const multiSender = function (cache, io) {
 				}
 
 				// Create Map
-				if (!cache.user[data.id].map && data.id === socket.id) {
+				console.log(data.id, socket.id);
+				if (data.id && (!cache.user[data.id] || !cache.user[data.id].map) && data.id === socket.id) {
+
+					// Map Generator
 					cache.user[socket.id].map = generateMaze(size.width, size.height);
+					cache.user[socket.id].map.ret;
+					cache.user[socket.id].map.seed;
+					cache.user[socket.id].map.asciiArt;
+
+					// Insert User
+					cache.user[socket.id].players = [socket.id];
+					socket.join(`game-${socket.id}`);
+
 				} else {
 					cache.user[socket.id].map = cache.user[data.id].map;
+					cache.user[data.id].players.push(socket.id);
+					socket.join(`game-${data.id}`);
 				}
 
 				// Exist Map
 				if (cache.user[data.id].map) {
-					
-					if (cache.user[socket.id].room) { 
-						socket.leave(`game-${cache.user[socket.id].room}`); 
-					}
-					cache.user[socket.id].room = data.id;
 
+					// Add to Room
+					if (cache.user[socket.id].roomId) { socket.leave(`game-${cache.user[socket.id].roomId}`); }
+					cache.user[socket.id].roomId = data.id;
 
-					io.to(cache.user[socket.id].room).emit('player-join', socket.id);
-					
-					socket.join(`game-${data.id}`);
+					// Send Join Emit
+					io.to(`game-${cache.user[socket.id].roomId}`).emit('player-join', { id: socket.id, request: false }, () => { });
+
+					// Invoke Player List
 					fn({ seed: cache.user[socket.id].map.seed, width: size.width, height: size.height });
 
+					// Send Username
 					socket.broadcast.emit('player-username', { username: data.username, id: socket.id });
 					socket.emit('player-username', { username: data.username, id: socket.id });
-				
+
 				}
 
 				// Nope
@@ -93,74 +102,108 @@ const multiSender = function (cache, io) {
 			}
 		});
 
-		// Player
-		socket.on('player-position', (obj) => {
-			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-				cache.user[socket.id].position = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) { 
-					io.to(cache.user[socket.id].room)
-						.emit('player-position', 
-							{ 
-								id: socket.id, 
-								data: cache.user[socket.id].position 
+		// Player Request
+		socket.on('player-list-request', () => {
+			const roomId = cache.user[socket.id].roomId;
+			if (Array.isArray(cache.user[roomId].players)) {
+				for (const item in cache.user[roomId].players) {
+					const playerId = cache.user[roomId].players[item];
+					socket.emit('player-join', { id: playerId, request: true }, () => {
+						for (const value in playerSender) {
+							if (cache.user[playerId] && cache.user[playerId][value]) {
+								playerSender[value](playerId)({ x: cache.user[playerId][value].x, y: cache.user[playerId][value].y, z: cache.user[playerId][value].z });
 							}
-						); 
+						}
+					});
 				}
 			}
 		});
 
-		socket.on('player-scale', (obj) => {
-			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-				cache.user[socket.id].scale = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-scale', { id: socket.id, data: cache.user[socket.id].scale }); }
-			}
-		});
+		// Player Sender Data
+		const playerSender = {
 
-		socket.on('player-rotation', (obj) => {
-			if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number') {
-				cache.user[socket.id].rotation = { x: obj.x, y: obj.y, z: obj.z };
-				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotation', { id: socket.id, data: cache.user[socket.id].rotation }); }
-			}
-		});
+			// Position
+			position: (id) => {
+				return function (obj) {
+					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
+						cache.user[id].position = { x: obj.x, y: obj.y, z: obj.z };
+						if (cache.user[id].roomId) {
+							io.to(`game-${cache.user[id].roomId}`).emit('player-position', {
+								id: id,
+								data: cache.user[id].position
+							});
+						}
+					}
+				}
+			},
 
-		socket.on('player-rotate-speed', (speed) => {
-			if (typeof speed === 'number') {
-				cache.user[socket.id].rotateSpeed = speed;
-				if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-rotate-speed', { id: socket.id, data: cache.user[socket.id].rotateSpeed }); }
-			}
-		});
+			// Scale
+			scale: (id) => {
+				return function (obj) {
+					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
+						cache.user[id].scale = { x: obj.x, y: obj.y, z: obj.z };
+						if (cache.user[id].roomId) { io.to(`game-${cache.user[id].roomId}`).emit('player-scale', { id: id, data: cache.user[id].scale }); }
+					}
+				}
+			},
+
+			// Rotation
+			rotation: (id) => {
+				return function (obj) {
+					if (obj && typeof obj.x === 'number' && typeof obj.y === 'number' && typeof obj.z === 'number' && cache.user[id]) {
+						cache.user[id].rotation = { x: obj.x, y: obj.y, z: obj.z };
+						if (cache.user[id].roomId) { io.to(`game-${cache.user[id].roomId}`).emit('player-rotation', { id: id, data: cache.user[id].rotation }); }
+					}
+				}
+			},
+
+			// Speed Rotate
+			rotateSpeed: (id) => {
+				return function (speed) {
+					if (typeof speed === 'number' && cache.user[id]) {
+						cache.user[id].rotateSpeed = speed;
+						if (cache.user[id].roomId) { io.to(`game-${cache.user[id].roomId}`).emit('player-rotate-speed', { id: id, data: cache.user[id].rotateSpeed }); }
+					}
+				}
+			},
+
+		};
+
+		// Player Socket
+		socket.on('player-position', playerSender.position(socket.id));
+		socket.on('player-scale', playerSender.scale(socket.id));
+		socket.on('player-rotation', playerSender.rotation(socket.id));
+		socket.on('player-rotate-speed', playerSender.rotateSpeed(socket.id));
 
 		// Disconnection
 		socket.on('disconnect', () => {
 
 			// Console message
 			console.log(tinyLog('user disconnected from the tiny pudding! :c', 'socket', socket.id));
-			if (cache.user[socket.id].room) { io.to(cache.user[socket.id].room).emit('player-leave', socket.id); }
+
+			// Remove User
+			if (cache.user[socket.id].roomId) { io.to(`game-${cache.user[socket.id].roomId}`).emit('player-leave', { id: socket.id, request: false }, () => { }); }
+			if (cache.user[socket.id].roomId && cache.user[cache.user[socket.id].roomId]) {
+
+				const roomId = cache.user[socket.id].roomId;
+
+				if (Array.isArray(cache.user[roomId].players)) {
+					const index = cache.user[roomId].players.indexOf(socket.id);
+					cache.user[roomId].players.splice(index, 1);
+				}
+
+			}
 
 			// Destroy User Data
 			cache.online--;
+			socket.broadcast.emit('online-users', cache.online);
+			socket.emit('online-users', cache.online);
+			socket.leave(`game-${cache.user[socket.id].roomId}`);
+
 			if (cache.user[socket.id]) {
 				delete cache.user[socket.id];
 			}
 
-			socket.broadcast.emit('online-users', cache.online);
-			socket.emit('online-users', cache.online);
-
-		});
-
-		// Player list
-		socket.on("request-players", () => {
-			if (cache.user[socket.id].room) {
-				const players = Object.keys(cache.user);
-				players.forEach((player) => {
-					if (cache.user[player].room == cache.user[socket.id].room) {
-						socket.emit('player-join', player);
-						socket.emit('player-position', { id: player, data: cache.user[player].position });
-						socket.emit('player-scale', { id: player, data: cache.user[player].scale });
-						socket.emit('player-rotation', { id: player, data: cache.user[player].rotation });
-					}
-				});
-			}
 		});
 
 	};
