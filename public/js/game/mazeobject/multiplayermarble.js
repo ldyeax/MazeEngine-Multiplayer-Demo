@@ -2,6 +2,9 @@ import MazeObject from "engine/mazeobject.js";
 import * as THREE from "three";
 import CellAlphaReceiver from "mazescript/cellalphareceiver.js";
 import CellLightSource from "mazescript/celllightsource.js";
+/**
+ * @typedef {import("../../../MazeEngine/engine/mazeengine.js").default} MazeEngine
+ */
 export default class MultiPlayerMarbleTest extends MazeObject {
 	/**
 	 * @param {MazeEngine} mazeEngine 
@@ -14,7 +17,7 @@ export default class MultiPlayerMarbleTest extends MazeObject {
 		this.root = new THREE.Group();
 
 		if (!args.isPlayer) {
-			let mesh = mazeEngine.gltfAssets.marbletest.getRoot();
+			let mesh = mazeEngine.assets.marbletest.getRoot();
 			mesh.scale.set(3,3,3);
 			mesh.rotation.set(0, Math.PI, 0);
 			this.root.add(mesh);
